@@ -12,6 +12,8 @@
 
 @interface CRNoteMainCell()
 
+@property( nonatomic, strong ) UIImageView *crimageview;
+
 @end
 
 @implementation CRNoteMainCell
@@ -27,6 +29,32 @@
     return self;
 }
 
+- (instancetype)initWithType:(NSString *)type{
+    self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:type];
+    if( self ){
+        [self initClass];
+        
+        if( type == CRNoteImageCell ){
+            self.image = [UIImage imageNamed:@"bear.jpg"];
+            
+            self.crimageview = ({
+                UIImageView *iv = [[UIImageView alloc] init];
+                iv.translatesAutoresizingMaskIntoConstraints = NO;
+                iv.contentMode = UIViewContentModeScaleAspectFill;
+                iv.layer.cornerRadius = 3.0f;
+                iv.clipsToBounds = YES;
+                iv.image = self.image;
+                iv;
+            });
+            
+            [self.wrapper insertSubview:self.crimageview atIndex:0];
+        }
+        
+        [self makeLayout];
+    }
+    return self;
+}
+
 - (void)initClass{
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     
@@ -37,9 +65,16 @@
         wrapper.layer.cornerRadius = 3.0f;
         wrapper;
     });
+    self.timeTag = ({
+        label = [UILabel new];
+        label.translatesAutoresizingMaskIntoConstraints = NO;
+        label.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightMedium];
+        label;
+    });
     self.notetitle = ({
         label = [UILabel new];
         label.translatesAutoresizingMaskIntoConstraints = NO;
+        label.backgroundColor = [UIColor clearColor];
         label.textColor = [UIColor whiteColor];
         label.font = [CRNoteApp appFontOfSize:17 weight:UIFontWeightMedium];
         label;
@@ -47,12 +82,14 @@
     self.subtitle = ({
         label = [UILabel new];
         label.translatesAutoresizingMaskIntoConstraints = NO;
+        label.backgroundColor = [UIColor clearColor];
         label.textColor = [UIColor whiteColor];
         label.font = [CRNoteApp appFontOfSize:14 weight:UIFontWeightRegular];
         label;
     });
     
     [self.contentView addSubview:self.wrapper];
+    [self.wrapper addSubview:self.timeTag];
     [self.wrapper addSubview:self.notetitle];
     [self.wrapper addSubview:self.subtitle];
     
@@ -61,12 +98,26 @@
 }
 
 - (void)makeLayout{
-    [CRLayout view:@[ self.wrapper, self.contentView ] type:CREdgeAround edge:UIEdgeInsetsMake(8, 16, -8, -16)];
-    [CRLayout view:@[ self.notetitle, self.wrapper ] type:CREdgeTop | CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(8, 8, 8, 8)];
+    CGFloat classNameHeight = 20;
+    
+    [self.timeTag.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10].active = YES;
+    [self.timeTag.heightAnchor constraintEqualToConstant:32].active = YES;
+    [self.timeTag.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:16].active = YES;
+    [self.timeTag.widthAnchor constraintEqualToConstant:72].active = YES;
+    [self.timeTag.rightAnchor constraintEqualToAnchor:self.wrapper.leftAnchor].active = YES;
+    [self.wrapper.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10].active = YES;
+    [self.wrapper.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-10].active = YES;
+    [self.wrapper.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-16].active = YES;
+    [self.notetitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
+    [self.notetitle.bottomAnchor constraintEqualToAnchor:self.subtitle.topAnchor].active = YES;
+    [self.subtitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
+    
+    [CRLayout view:@[ self.notetitle, self.wrapper ] type:CREdgeTop | CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(8, 8, 0, -8)];
     [CRLayout view:@[ self.subtitle, self.wrapper ] type:CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(0, 8, 0, -8)];
-    [self.notetitle.heightAnchor constraintEqualToConstant:20].active = YES;
-    [self.subtitle.topAnchor constraintEqualToAnchor:self.notetitle.bottomAnchor].active = YES;
-    [self.subtitle.bottomAnchor constraintEqualToAnchor:self.wrapper.bottomAnchor].active = YES;
+
+    if( self.crimageview ){
+        [CRLayout view:@[ self.crimageview, self.wrapper ] type:CREdgeAround];
+    }
 }
 
 @end

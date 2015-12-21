@@ -6,6 +6,8 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
+#define CR_PEAK_HEIGHT 52.0f
+
 #import "CRNoteViewController.h"
 #import "CRColorPickController.h"
 #import "GGAnimationSunrise.h"
@@ -16,6 +18,7 @@
 @property( nonatomic, strong ) GGAnimationSunrise *sun;
 
 @property( nonatomic, strong ) UIView *parkGround;
+@property( nonatomic, strong ) UIImageView *parkBear;
 @property( nonatomic, strong ) UILabel *parkTitle;
 @property( nonatomic, strong ) NSLayoutConstraint *parkGuide;
 
@@ -26,9 +29,8 @@
 @property( nonatomic, strong ) UIButton *peakButtonFont;
 @property( nonatomic, strong ) UIButton *peakButtonLock;
 @property( nonatomic, strong ) UIButton *peakButtonSave;
+@property( nonatomic, strong ) UIButton *peakButtonMessage;
 
-@property( nonatomic, strong ) UIButton *peakLeftButton;
-@property( nonatomic, strong ) UIButton *peakRightButton;
 @property( nonatomic, strong ) NSLayoutConstraint *peakGuide;
 @property( nonatomic, strong ) UIButton *dismissKeyboard;
 @property( nonatomic, strong ) NSLayoutConstraint *dismissKeyboarGuide;
@@ -72,6 +74,10 @@
     [self makeTextBoard];
     [self makePark];
     [self makePeak];
+    
+//    if( 1 == 1 )
+    [self makeBear];
+    
     [self addNotificationObserver];
     [self viewLastLoad];
 }
@@ -79,7 +85,7 @@
 - (void)viewLastLoad{
     [self.floatingActionCheck.topAnchor constraintEqualToAnchor:self.park.bottomAnchor constant:-28].active = YES;
     [self.textBoard.topAnchor constraintEqualToAnchor:self.park.bottomAnchor].active = YES;
-    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
+    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor constant:-CR_PEAK_HEIGHT].active = YES;
     self.sun = [[GGAnimationSunrise alloc] initWithType:GGAnimationSunriseTypeConcurrent blockOnCompletion:^(GGAnimationSunriseType type){
         UIColor *color = self.colorQueue.firstObject;
         [self.colorQueue removeObjectAtIndex:0];
@@ -103,7 +109,6 @@
     
     self.textBoard.font = self.titleBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
-    self.textBoard.text = self.crnote.content;
     if( ![self.crnote.content isEqualToString:CRNoteInvalilContent] )
         self.textBoard.text = self.crnote.content;
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
@@ -132,9 +137,9 @@
     if( constant != 0 )
         self.dismissKeyboarGuide.constant = 0.0f;
     else
-        self.dismissKeyboarGuide.constant = 52.0f;
+        self.dismissKeyboarGuide.constant = CR_PEAK_HEIGHT;
     
-    self.peakGuide.constant = -constant > 0 ? 0 : -constant;
+    self.peakGuide.constant = -constant > 0 ? 0 : -constant + CR_PEAK_HEIGHT;
     
     [UIView animateWithDuration:duration
                           delay:0.0f
@@ -181,7 +186,8 @@
         shouldLayoutPark = YES;
     }
     
-    self.peakGuide.constant = 52;
+    [self peakLayout:YES autoLayout:NO];
+    
     self.floatingActionCheck.enabled = YES;
     self.floatingActionCheck.hidden = NO;
     self.floatingActionCheck.transform = CGAffineTransformMakeScale(0, 0);
@@ -207,7 +213,7 @@
     self.canAdjust = YES;
     
     UIViewController *target = self.childViewControllers.firstObject;
-    self.peakGuide.constant = 0;
+    [self peakLayout:NO autoLayout:NO];
     self.textBoard.hidden = NO;
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
@@ -237,8 +243,6 @@
     self.themeString = string;
     self.themeColor = color;
     [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
-    [self.peakLeftButton setTitleColor:color forState:UIControlStateNormal];
-    [self.peakRightButton setTitleColor:color forState:UIControlStateNormal];
     [self.sun sunriseAtLand:self.parkGround
                    location:CGPointMake(self.view.frame.size.width / 2, (STATUS_BAR_HEIGHT + 128) / 2)
                  lightColor:color];
@@ -259,6 +263,8 @@
 - (void)adjustSunlight{
     CGFloat labelAlpha = (fabs(self.parkGuide.constant) / 128.0);
     
+    if( self.parkBear )
+        self.parkBear.alpha = 1 - labelAlpha;
     self.parkTitle.alpha = 1 - labelAlpha;
     self.park.layer.shadowOpacity = labelAlpha * 0.27;
 }
@@ -285,6 +291,8 @@
                      animations:^{
                          
                          self.parkTitle.alpha = alpha;
+                         if( self.parkBear )
+                             self.parkBear.alpha = alpha;
                          [self.view layoutIfNeeded];
                          
                      }completion:nil];
@@ -302,6 +310,7 @@
     self.parkTitle = ({
         UILabel *title = [[UILabel alloc] init];
         title.translatesAutoresizingMaskIntoConstraints = NO;
+        title.backgroundColor = [UIColor clearColor];
         title.textColor = [UIColor whiteColor];
         title.font = [CRNoteApp appFontOfSize:37 weight:UIFontWeightRegular];
         title.adjustsFontSizeToFitWidth = YES;
@@ -361,6 +370,19 @@
     self.parkGuide.active = YES;
 }
 
+- (void)makeBear{
+    self.parkBear = ({
+        UIImageView *iv = [[UIImageView alloc] init];
+        iv.translatesAutoresizingMaskIntoConstraints = NO;
+        iv.contentMode = UIViewContentModeScaleAspectFill;
+        iv.clipsToBounds = YES;
+        iv.image = [UIImage imageNamed:@"bear.jpg"];
+        iv;
+    });
+    [self.park insertSubview:self.parkBear atIndex:0];
+    [CRLayout view:@[self.parkBear, self.park] type:CREdgeAround];
+}
+
 - (void)makePeak{
     UIButton *(^makeButton)(NSString *, NSUInteger) = ^(NSString *title, NSUInteger tag){
         UIButton *button = [[UIButton alloc] init];
@@ -398,6 +420,17 @@
         [button addTarget:self action:@selector(viewEndEdit) forControlEvents:UIControlEventTouchUpInside];
         button;
     });
+    self.peakButtonMessage = ({
+        button = [[UIButton alloc] init];
+        button.translatesAutoresizingMaskIntoConstraints = NO;
+        button.titleLabel.font = [CRNoteApp appFontOfSize:19 weight:UIFontWeightMedium];
+        button.backgroundColor = [UIColor colorWithWhite:50 / 255.0 alpha:1];
+        button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+        button.contentEdgeInsets = UIEdgeInsetsMake(0, 16, 0, -16);
+        [button setTitleColor:[UIColor colorWithWhite:237 / 255.0 alpha:1] forState:UIControlStateNormal];
+        [button addTarget:self action:@selector(peakMessageDisappear) forControlEvents:UIControlEventTouchUpInside];
+        button;
+    });
     
     __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
     [@[ self.peakButtonCopy, self.peakButtonFont, self.peakButtonLock, self.peakButtonColor, self.peakButtonSave ]
@@ -405,35 +438,75 @@
          obj.translatesAutoresizingMaskIntoConstraints = NO;
          [self.peak addSubview:obj];
          
-         [obj.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor].active = YES;
+         [obj.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor multiplier:0.5].active = YES;
          [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:( 1 / 5.0 )].active = YES;
-         [obj.centerYAnchor constraintEqualToAnchor:self.peak.centerYAnchor].active = YES;
+         [obj.topAnchor constraintEqualToAnchor:self.peak.topAnchor].active = YES;
          [obj.leftAnchor constraintEqualToAnchor:anchor].active = YES;
          anchor = obj.rightAnchor;
     }];
     
     [self.peak addSubview:self.dismissKeyboard];
+    [self.peak addSubview:self.peakButtonMessage];
     [self.view addSubview:self.peak];
     
-    [self.dismissKeyboard.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor].active = YES;
-    [self.dismissKeyboard.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
-    [self.dismissKeyboard.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
-    self.dismissKeyboarGuide = [self.dismissKeyboard.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
-    self.dismissKeyboarGuide.active = YES;
+    [@[ self.dismissKeyboard, self.peakButtonMessage ] enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
+        [obj.heightAnchor constraintEqualToConstant:52].active = YES;
+        [obj.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
+         [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
+        if( index == 0 ){
+            self.dismissKeyboarGuide = [obj.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
+            self.dismissKeyboarGuide.active = YES;
+        }else{
+            [obj.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
+        }
+    }];
     
-    self.peakGuide = [self.peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+    self.peakGuide = [self.peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:52];
     self.peakGuide.active = YES;
-    [self.peak.heightAnchor constraintEqualToConstant:52].active = YES;
+    [self.peak.heightAnchor constraintEqualToConstant:104].active = YES;
     [CRLayout view:@[ self.peak, self.view ] type:CREdgeLeft | CREdgeRight];
+}
+
+- (void)peakLayout:(BOOL)hide autoLayout:(BOOL)layout{
+    if( hide )
+        self.peakGuide.constant = CR_PEAK_HEIGHT * 2;
+    else
+        self.peakGuide.constant = CR_PEAK_HEIGHT;
+    
+    if( layout )
+        [UIView animateWithDuration:0.25f
+                              delay:0.0f options:(7 << 16)
+                         animations:^{
+                             [self.peak layoutIfNeeded];
+                         }completion:nil];
+}
+
+- (void)peakMessage:(NSString *)message{
+    [self.peakButtonMessage setTitle:message forState:UIControlStateNormal];
+    
+    self.peakGuide.constant = 0;
+    [UIView animateWithDuration:0.25f
+                          delay:0.0f options:(7 << 16)
+                     animations:^{
+                         [self.peak layoutIfNeeded];
+                     }completion:nil];
+}
+
+- (void)peakMessageDisappear{
+    [self peakLayout:NO autoLayout:YES];
 }
 
 - (void)peakAction:(UIButton *)sender{
     NSUInteger tag = sender.tag - 1000;
     NSLog(@"%ld", tag);
     if( tag == 1 ){
-        
-        self.crnote.editable == CRNoteEditableYes ? [self contentLock:YES] : [self contentLock:NO];
-        
+        if( self.crnote.editable == CRNoteEditableYes ){
+            [self contentLock:YES];
+            [self peakMessage:@"Note Locked"];
+        }else{
+            [self contentLock:NO];
+            [self peakMessage:@"Note Unlocked"];
+        }
     }else if( tag == 2 ){
         [self makeColorPicker];
         
@@ -502,6 +575,11 @@
         [self.peakButtonLock setTitle:[UIFont mdiLock] forState:UIControlStateNormal];
     else
         [self.peakButtonLock setTitle:[UIFont mdiLockOpen] forState:UIControlStateNormal];
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
+    if( self.peakGuide.constant == 0 )
+        [self peakLayout:NO autoLayout:YES];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
