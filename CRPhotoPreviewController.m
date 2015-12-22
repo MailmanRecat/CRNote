@@ -20,10 +20,11 @@
 
 @implementation CRPhotoPreviewController
 
-- (instancetype)initWithImage:(UIImage *)image{
+- (instancetype)initWithImage:(UIImage *)image title:(NSString *)title{
     self = [super init];
     if( self ){
         self.crimage = image;
+        self.title = title;
     }
     return self;
 }
@@ -44,6 +45,15 @@
         park;
     });
     
+    self.titleLabel = ({
+        UILabel *title = [[UILabel alloc] init];
+        title.translatesAutoresizingMaskIntoConstraints = NO;
+        title.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightRegular];
+        title.textColor = [UIColor whiteColor];
+        title.text = @"image";
+        title;
+    });
+    
     UIButton *(^makeButton)(NSString *, NSUInteger) = ^(NSString *title, NSUInteger tag){
         UIButton *button = [[UIButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
@@ -60,6 +70,7 @@
     self.buttonDelete = makeButton([UIFont mdiDelete], 1);
     
     [self.view addSubview:self.park];
+    [self.park addSubview:self.titleLabel];
     [self.park addSubview:self.dismissButton];
     [self.park addSubview:self.buttonDelete];
     
@@ -68,8 +79,27 @@
     [self.buttonDelete.widthAnchor constraintEqualToConstant:56].active = YES;
     
     [CRLayout view:@[self.park, self.view] type:CREdgeTop | CREdgeLeft | CREdgeRight];
+    [CRLayout view:@[self.titleLabel, self.park] type:CREdgeTop | CREdgeLeft | CREdgeBottom | CREdgeRight
+              edge:UIEdgeInsetsMake(STATUS_BAR_HEIGHT, 56, 0, -56)];
     [CRLayout view:@[self.dismissButton, self.park] type:CREdgeTop | CREdgeLeft | CREdgeBottom edge:UIEdgeInsetsMake(STATUS_BAR_HEIGHT, 0, 0, 0)];
     [CRLayout view:@[self.buttonDelete, self.park] type:CREdgeRight | CREdgeTop | CREdgeBottom edge:UIEdgeInsetsMake(STATUS_BAR_HEIGHT, 0, 0, 0)];
+}
+
+- (void)parkAction:(UIButton *)sender{
+    NSUInteger tag = sender.tag - 1000;
+    if( tag == 0 ){
+        [self dismissSelf];
+    }else if( tag == 1 ){
+        [UIView animateWithDuration:0.25f
+                              delay:0.0 options:(7 << 16)
+                         animations:^{
+                             self.crimageview.transform = CGAffineTransformMakeScale(0.4, 0.4);
+                             self.crimageview.alpha = 0;
+                         }completion:^(BOOL f){
+                             [[NSNotificationCenter defaultCenter] postNotificationName:CRPhotoPreviewDidDeleteNotification object:nil];
+                             [self dismissSelf];
+                         }];
+    }
 }
 
 - (void)makeCrimage{
@@ -81,16 +111,8 @@
     });
     
     [self.view addSubview:self.crimageview];
-    
     [self.crimageview.topAnchor constraintEqualToAnchor:self.park.bottomAnchor].active = YES;
     [CRLayout view:@[self.crimageview, self.view] type:CREdgeBottom | CREdgeLeft | CREdgeRight];
-}
-
-- (void)parkAction:(UIButton *)sender{
-    NSUInteger tag = sender.tag - 1000;
-    if( tag == 0 ){
-        [self dismissSelf];
-    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle{

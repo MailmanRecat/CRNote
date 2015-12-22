@@ -8,8 +8,10 @@
 
 #import "CRBasicViewController.h"
 
+static NSString *const CRPhotoPreviewDidDeleteNotification = @"CR_PHOTO_PREVIEW_DID_DELETE_NOTIFICATION";
+
 @interface CRPhotoPreviewController : CRBasicViewController
 
-- (instancetype)initWithImage:(UIImage *)image;
+- (instancetype)initWithImage:(UIImage *)image title:(NSString *)title;
 
 @end

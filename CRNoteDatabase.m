@@ -12,6 +12,8 @@ static NSString *const CRNoteDatabaseIDCount = @"CR_NOTE_DATABASE_ID_COUNT";
 static NSString *const CRNoteDatabaseIDPrefix = @"CR_NOTE_DATABASE_ID_PREFIX";
 static NSString *const CRNoteDatabaseKey = @"CR_NOTE_DATABASE_KEY";
 
+static NSString *const CR_NOTE_IMAGE_HOME_DIRECTORY = @"CRNoteImages";
+
 @implementation CRNoteDatabase
 
 + (NSArray *)rowFromCRNote:(CRNote *)note{
@@ -115,6 +117,10 @@ static NSString *const CRNoteDatabaseKey = @"CR_NOTE_DATABASE_KEY";
         [CRNoteDatabase insertNote:note];
     
     return YES;
+}
+
++ (NSString *)pathContentsOfFile:(NSString *)path{
+    return [NSString stringWithFormat:@"%@/Documents/%@/%@", NSHomeDirectory(), CR_NOTE_IMAGE_HOME_DIRECTORY, path];
 }
 
 @end

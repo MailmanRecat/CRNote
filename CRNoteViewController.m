@@ -7,13 +7,18 @@
 //
 
 #define CR_PEAK_HEIGHT 52.0f
+#define CR_USER_LIBRARY_DENEY @"Library access denied, tap to setting."
 
+#import <Photos/Photos.h>
+#import "CRNoteDatabase.h"
 #import "CRNoteViewController.h"
 #import "CRColorPickController.h"
 #import "GGAnimationSunrise.h"
 #import "CRFontController.h"
 #import "CRPhotoPreviewController.h"
 #import "CRPHAssetsController.h"
+
+static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library access denied, tap to setting.";
 
 @interface CRNoteViewController()<UITextFieldDelegate, UITextViewDelegate, UIScrollViewDelegate>
 
@@ -23,6 +28,7 @@
 @property( nonatomic, strong ) UIImageView *parkBear;
 @property( nonatomic, strong ) UILabel *parkTitle;
 @property( nonatomic, strong ) NSLayoutConstraint *parkGuide;
+@property( nonatomic, strong ) UIImage *bearCache;
 
 @property( nonatomic, strong ) UIView *peak;
 
@@ -78,7 +84,11 @@
     [self makePark];
     [self makePeak];
     
-    [self makeBear];
+    if( [self.crnote.imageName isEqualToString:CRNoteInvalilImageName] == NO ){
+        [self makeBear];
+        self.bearCache = [UIImage imageNamed:@"bear.jpg"];
+        self.parkBear.image = self.bearCache;
+    }
     
     [self addNotificationObserver];
     [self viewLastLoad];
@@ -117,6 +127,7 @@
         self.textBoard.text = self.crnote.content;
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
         self.parkTitle.text = self.titleBoard.text = self.crnote.title;
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated{
@@ -129,6 +140,10 @@
     [center addObserver:self
                selector:@selector(willKeyBoardChangeFrame:)
                    name:UIKeyboardWillChangeFrameNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(unmakeBear)
+                   name:CRPhotoPreviewDidDeleteNotification
                  object:nil];
 }
 
@@ -181,7 +196,7 @@
 
 - (void)push:(UIViewController *)viewController{
     self.canAdjust = NO;
-    
+    [self parkSunset];
     [self addChildViewController:viewController];
     
     viewController.view.frame = ({
@@ -208,10 +223,8 @@
                          self.floatingActionCheck.transform = CGAffineTransformMakeScale(1, 1);
                          viewController.view.frame = self.view.frame;
                          
-                         if( shouldLayoutPark ){
-                             [self adjustSunlight];
+                         if( shouldLayoutPark )
                              [self.park layoutIfNeeded];
-                         }
                          
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
@@ -221,7 +234,7 @@
 
 - (void)pop{
     self.canAdjust = YES;
-    
+    [self parkSunrise];
     UIViewController *target = self.childViewControllers.firstObject;
     [self peakLayout:NO autoLayout:NO];
     self.textBoard.hidden = NO;
@@ -247,15 +260,20 @@
 }
 
 - (void)updateThemeColor:(UIColor *)color string:(NSString *)string{
-    if( !self.colorQueue ) self.colorQueue = [NSMutableArray new];
     
-    [self.colorQueue addObject:color];
     self.themeString = string;
     self.themeColor = color;
     [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
-    [self.sun sunriseAtLand:self.parkGround
-                   location:CGPointMake(self.view.frame.size.width / 2, (STATUS_BAR_HEIGHT + 128) / 2)
-                 lightColor:color];
+    
+    if( [self.crnote.imageName isEqualToString:CRNoteInvalilImageName] ){
+        if( !self.colorQueue ) self.colorQueue = [NSMutableArray new];
+        
+        [self.colorQueue addObject:color];
+        [self.sun sunriseAtLand:self.parkGround
+                       location:CGPointMake(self.view.frame.size.width / 2, (STATUS_BAR_HEIGHT + 128) / 2)
+                     lightColor:color];
+    }else
+        self.park.backgroundColor = color;
 }
 
 - (void)updateNoteFont:(NSString *)name size:(NSUInteger)size{
@@ -264,8 +282,20 @@
     self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
 }
 
-- (void)updateNoteCover:(UIImage *)image{
-    self.parkBear.image = image;
+- (void)updateNoteCover:(UIImage *)image path:(NSString *)path{
+    if( image && path ){
+        if( !self.bearCache ){
+            [self makeBear];
+            self.bearCache = image;
+        }
+        
+        self.parkBear.image = image;
+    }else{
+        if( self.bearCache )
+            self.parkBear.image = self.bearCache;
+        
+        [self pop];
+    }
 }
 
 - (void)parkSunset{
@@ -305,8 +335,6 @@
                      animations:^{
                          
                          self.parkTitle.alpha = alpha;
-//                         if( self.parkBear )
-//                             self.parkBear.alpha = alpha;
                          [self.view layoutIfNeeded];
                          
                      }completion:nil];
@@ -385,16 +413,23 @@
 }
 
 - (void)makeBear{
-    self.parkBear = ({
-        UIImageView *iv = [[UIImageView alloc] init];
-        iv.translatesAutoresizingMaskIntoConstraints = NO;
-        iv.contentMode = UIViewContentModeScaleAspectFill;
-        iv.clipsToBounds = YES;
-        iv.image = [UIImage imageNamed:@"bear.jpg"];
-        iv;
-    });
+    if( !self.parkBear )
+        self.parkBear = ({
+            UIImageView *iv = [[UIImageView alloc] init];
+            iv.translatesAutoresizingMaskIntoConstraints = NO;
+            iv.contentMode = UIViewContentModeScaleAspectFill;
+            iv.clipsToBounds = YES;
+            iv;
+        });
+       
     [self.park insertSubview:self.parkBear atIndex:0];
     [CRLayout view:@[self.parkBear, self.park] type:CREdgeAround];
+}
+
+- (void)unmakeBear{
+    [self.parkBear removeFromSuperview];
+    self.bearCache = nil;
+    self.crnote.imageName = CRNoteInvalilImageName;
 }
 
 - (void)makePeak{
@@ -514,6 +549,10 @@
 }
 
 - (void)peakMessageDisappear{
+    if( [self.peakButtonMessage.titleLabel.text isEqualToString:PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING] ){
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        return;
+    }
     [self peakLayout:NO autoLayout:YES];
 }
 
@@ -522,7 +561,6 @@
     
     switch( tag ){
         case 0:
-            [self crPHAssetsController];
         break;
         case 1:
             if( self.crnote.editable == CRNoteEditableYes ){
@@ -540,7 +578,10 @@
             [self makeFontPicker];
         break;
         case 5:
-            [self photoPreview];
+            if( self.bearCache )
+                [self photoPreview];
+            else
+                [self crPHAssetsController];
         break;
         default:
             break;
@@ -688,17 +729,34 @@
 
 - (void)photoPreview{
     [self presentViewController:({
-        CRPhotoPreviewController *php = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image];
+        CRPhotoPreviewController *php = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image title:self.titleBoard.text];
         php;
     }) animated:YES completion:nil];
 }
 
 - (void)crPHAssetsController{
-    [self push:({
-        CRPHAssetsController *crph = [CRPHAssetsController new];
-        crph.themeColor = self.themeColor;
-        crph;
-    })];
+    
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if( status == PHAuthorizationStatusAuthorized ){
+        [self push:({
+            CRPHAssetsController *crph = [CRPHAssetsController new];
+            crph.themeColor = self.themeColor;
+            crph;
+        })];
+    }else if( status == PHAuthorizationStatusDenied ){
+        [self peakMessage:PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING];
+    }else if( status == PHAuthorizationStatusNotDetermined ){
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status){
+            [self push:({
+                CRPHAssetsController *crph = [CRPHAssetsController new];
+                crph.themeColor = self.themeColor;
+                crph;
+            })];
+        }];
+    }else if( status == PHAuthorizationStatusRestricted ){
+        [self peakMessage:@"Library access denied."];
+    }
 }
 
 - (void)dismissSelf{

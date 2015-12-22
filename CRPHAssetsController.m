@@ -10,8 +10,9 @@
 #import "CRPHAssetsController.h"
 #import "CRPHAssetsCell.h"
 #import "CRNoteViewController.h"
+#import "CRPHAssetsPreviewController.h"
 
-@interface CRPHAssetsController()<UITableViewDataSource, UITableViewDelegate>
+@interface CRPHAssetsController()<UITableViewDataSource, UITableViewDelegate, UIViewControllerPreviewingDelegate>
 
 @property( nonatomic, strong ) UIButton *cancelButton;
 @property( nonatomic, strong ) UITableView *crBear;
@@ -25,17 +26,46 @@
 
 @implementation CRPHAssetsController
 
+- (void)previewingContext:(id<UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit{}
+
+- (UIViewController *)previewingContext:(id<UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
+    
+    NSIndexPath *indexPath = [self.crBear indexPathForRowAtPoint:location];
+    if( !indexPath ) return nil;
+    
+    CRPHAssetsCell *CRPHC = [self.crBear cellForRowAtIndexPath:indexPath];
+    previewingContext.sourceRect = CRPHC.frame;
+    
+    return ({
+        PHAsset *asset = self.PHResult[indexPath.row];
+        CRPHAssetsPreviewController *previewvc = [[CRPHAssetsPreviewController alloc] initWithImage:CRPHC.crimagev.image];
+        previewvc.preferredContentSize = CGSizeMake(asset.pixelWidth * 0.5, asset.pixelHeight * 0.5);
+        previewvc;
+    });
+}
+
+- (void)check3DTouch{
+    BOOL support3DTouch = YES;
+    
+    if( self.traitCollection.forceTouchCapability != UIForceTouchCapabilityAvailable ) support3DTouch = NO;
+    if( ![self.traitCollection respondsToSelector:@selector(forceTouchCapability)] ) support3DTouch = NO;
+    
+    if( support3DTouch )
+        [self registerForPreviewingWithDelegate:self sourceView:self.crBear];
+}
+
 - (void)viewDidLoad{
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     self.heightOfCell = STATUS_BAR_HEIGHT + 56 + 72;
     
     PHFetchOptions *PHO = [[PHFetchOptions alloc] init];
-    PHO.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    PHO.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     self.PHResult = [PHAsset fetchAssetsWithOptions:PHO];
     
     [self makeCRBear];
     [self makeCancelButton];
+    [self check3DTouch];
 }
 
 - (void)viewDidAppear:(BOOL)animated{
@@ -137,13 +167,16 @@
                                                   contentMode:PHImageContentModeAspectFill
                                                       options:nil
                                                 resultHandler:^(UIImage *image, NSDictionary *info){
-                                                    [notevc updateNoteCover:image];
+                                                    [notevc updateNoteCover:image path:@"path"];
                                                 }];
     }
 }
 
 - (void)dismissSelf{
-    NSLog(@"dismiss");
+    if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
+        CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
+        [notevc updateNoteCover:nil path:nil];
+    }
 }
 
 @end

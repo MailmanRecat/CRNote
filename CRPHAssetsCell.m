@@ -34,7 +34,7 @@
     self.dot = ({
         UILabel *dot = [[UILabel alloc] init];
         dot.translatesAutoresizingMaskIntoConstraints = NO;
-        dot.font = [UIFont MaterialDesignIconsWithSize:24];
+        dot.font = [UIFont MaterialDesignIconsWithSize:28];
         dot.text = [UIFont mdiCheckboxBlankCircleOutline];
         dot.textAlignment = NSTextAlignmentCenter;
         dot;
