@@ -66,10 +66,6 @@
     self.craigBear.backgroundColor = [UIColor clearColor];
 }
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
 - (void)makePark{
     self.park = ({
         UIView *park = [[UIView alloc] init];

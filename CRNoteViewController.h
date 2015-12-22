@@ -17,6 +17,7 @@
 
 - (void)updateThemeColor:(UIColor *)color string:(NSString *)string;
 - (void)updateNoteFont:(NSString *)name size:(NSUInteger)size;
+- (void)updateNoteCover:(UIImage *)image;
 
 - (void)parkSunset;
 - (void)parkSunrise;

@@ -82,7 +82,28 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated{
+    self.craigBearIndexPath = [NSIndexPath indexPathForRow:[self.fontnameDataSource indexOfObject:self.selectedFontName] inSection:0];
+    self.craigMonkeyIndexPath = [NSIndexPath indexPathForRow:[self.fontsizeDataSource indexOfObject:[NSString stringWithFormat:@"%ldpt", self.selectedFontSize]]
+                                                   inSection:0];
     
+    [self.craigBear scrollToRowAtIndexPath:self.craigBearIndexPath
+                          atScrollPosition:UITableViewScrollPositionMiddle
+                                  animated:NO];
+    [self.craigMonkey scrollToRowAtIndexPath:self.craigMonkeyIndexPath
+                            atScrollPosition:UITableViewScrollPositionMiddle
+                                    animated:NO];
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    self.craigBear.backgroundColor = self.craigMonkey.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1];
+}
+
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    
+    self.craigBear.backgroundColor = self.craigMonkey.backgroundColor = [UIColor clearColor];
 }
 
 - (void)makePeak{
@@ -283,6 +304,7 @@
         [cell statusON];
         
         self.selectedFontName = self.fontnameDataSource[indexPath.row];
+        [self.craigMonkey reloadData];
     }else{
         cell = [tableView cellForRowAtIndexPath:self.craigMonkeyIndexPath];
         [cell statusOFF];

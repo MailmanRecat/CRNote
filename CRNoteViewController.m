@@ -12,6 +12,8 @@
 #import "CRColorPickController.h"
 #import "GGAnimationSunrise.h"
 #import "CRFontController.h"
+#import "CRPhotoPreviewController.h"
+#import "CRPHAssetsController.h"
 
 @interface CRNoteViewController()<UITextFieldDelegate, UITextViewDelegate, UIScrollViewDelegate>
 
@@ -28,6 +30,7 @@
 @property( nonatomic, strong ) UIButton *peakButtonColor;
 @property( nonatomic, strong ) UIButton *peakButtonFont;
 @property( nonatomic, strong ) UIButton *peakButtonLock;
+@property( nonatomic, strong ) UIButton *peakButtonImage;
 @property( nonatomic, strong ) UIButton *peakButtonSave;
 @property( nonatomic, strong ) UIButton *peakButtonMessage;
 
@@ -75,7 +78,6 @@
     [self makePark];
     [self makePeak];
     
-//    if( 1 == 1 )
     [self makeBear];
     
     [self addNotificationObserver];
@@ -97,6 +99,8 @@
 - (void)viewWillAppear:(BOOL)animated{
     if( self.isFirstTimeViewAppear )
         [self viewWillFristTimeAppear];
+    
+    self.peakButtonSave.enabled = NO;
 }
 
 - (void)viewWillFristTimeAppear{
@@ -155,7 +159,13 @@
 }
 
 - (void)makeFontPicker{
-    [self push:[CRFontController new]];
+    [self push:({
+        CRFontController *fontSelecter = [[CRFontController alloc] init];
+        fontSelecter.themeColor = self.themeColor;
+        fontSelecter.selectedFontName = self.crnote.fontname;
+        fontSelecter.selectedFontSize = [self.crnote.fontsize integerValue];
+        fontSelecter;
+    })];
 }
 
 - (void)makeColorPicker{
@@ -250,6 +260,12 @@
 
 - (void)updateNoteFont:(NSString *)name size:(NSUInteger)size{
     self.textBoard.font = [UIFont fontWithName:name size:size];
+    self.crnote.fontname = name;
+    self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
+}
+
+- (void)updateNoteCover:(UIImage *)image{
+    self.parkBear.image = image;
 }
 
 - (void)parkSunset{
@@ -263,8 +279,6 @@
 - (void)adjustSunlight{
     CGFloat labelAlpha = (fabs(self.parkGuide.constant) / 128.0);
     
-    if( self.parkBear )
-        self.parkBear.alpha = 1 - labelAlpha;
     self.parkTitle.alpha = 1 - labelAlpha;
     self.park.layer.shadowOpacity = labelAlpha * 0.27;
 }
@@ -291,8 +305,8 @@
                      animations:^{
                          
                          self.parkTitle.alpha = alpha;
-                         if( self.parkBear )
-                             self.parkBear.alpha = alpha;
+//                         if( self.parkBear )
+//                             self.parkBear.alpha = alpha;
                          [self.view layoutIfNeeded];
                          
                      }completion:nil];
@@ -389,8 +403,10 @@
         button.tag = 1000 + tag;
         button.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
         button.backgroundColor = [UIColor clearColor];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
         [button setTitle:title forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateHighlighted];
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
         [button addTarget:self action:@selector(peakAction:) forControlEvents:UIControlEventTouchUpInside];
         return button;
     };
@@ -408,6 +424,7 @@
     self.peakButtonColor = makeButton([UIFont mdiPalette], 2);
     self.peakButtonSave = makeButton([UIFont mdiPackageDown], 3);
     self.peakButtonFont = makeButton([UIFont mdiParking], 4);
+    self.peakButtonImage = makeButton([UIFont mdiFileImageBox], 5);
     
     UIButton *button;
     self.dismissKeyboard = ({
@@ -416,14 +433,14 @@
         button.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
         button.backgroundColor = [UIColor whiteColor];
         [button setTitle:[UIFont mdiKeyboardClose] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor colorWithWhite:102 / 255.0 alpha:1] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
         [button addTarget:self action:@selector(viewEndEdit) forControlEvents:UIControlEventTouchUpInside];
         button;
     });
     self.peakButtonMessage = ({
         button = [[UIButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.titleLabel.font = [CRNoteApp appFontOfSize:19 weight:UIFontWeightMedium];
+        button.titleLabel.font = [CRNoteApp appFontOfSize:17 weight:UIFontWeightMedium];
         button.backgroundColor = [UIColor colorWithWhite:50 / 255.0 alpha:1];
         button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         button.contentEdgeInsets = UIEdgeInsetsMake(0, 16, 0, -16);
@@ -433,13 +450,13 @@
     });
     
     __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
-    [@[ self.peakButtonCopy, self.peakButtonFont, self.peakButtonLock, self.peakButtonColor, self.peakButtonSave ]
+    [@[ self.peakButtonCopy, self.peakButtonFont, self.peakButtonLock, self.peakButtonImage, self.peakButtonColor, self.peakButtonSave ]
      enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
          obj.translatesAutoresizingMaskIntoConstraints = NO;
          [self.peak addSubview:obj];
          
          [obj.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor multiplier:0.5].active = YES;
-         [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:( 1 / 5.0 )].active = YES;
+         [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:( 1 / 6.0 )].active = YES;
          [obj.topAnchor constraintEqualToAnchor:self.peak.topAnchor].active = YES;
          [obj.leftAnchor constraintEqualToAnchor:anchor].active = YES;
          anchor = obj.rightAnchor;
@@ -449,15 +466,19 @@
     [self.peak addSubview:self.peakButtonMessage];
     [self.view addSubview:self.peak];
     
-    [@[ self.dismissKeyboard, self.peakButtonMessage ] enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
-        [obj.heightAnchor constraintEqualToConstant:52].active = YES;
-        [obj.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
-         [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
+    [@[ self.dismissKeyboard, self.peakButtonMessage ] enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger index, BOOL *sS){
+        
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateHighlighted];
+        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
+        
+        [button.heightAnchor constraintEqualToConstant:52].active = YES;
+        [button.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
+        [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
         if( index == 0 ){
-            self.dismissKeyboarGuide = [obj.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
+            self.dismissKeyboarGuide = [button.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
             self.dismissKeyboarGuide.active = YES;
         }else{
-            [obj.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
+            [button.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
         }
     }];
     
@@ -498,21 +519,31 @@
 
 - (void)peakAction:(UIButton *)sender{
     NSUInteger tag = sender.tag - 1000;
-    NSLog(@"%ld", tag);
-    if( tag == 1 ){
-        if( self.crnote.editable == CRNoteEditableYes ){
-            [self contentLock:YES];
-            [self peakMessage:@"Note Locked"];
-        }else{
-            [self contentLock:NO];
-            [self peakMessage:@"Note Unlocked"];
-        }
-    }else if( tag == 2 ){
-        [self makeColorPicker];
-        
-    }else if( tag == 4 ){
-        [self makeFontPicker];
-        
+    
+    switch( tag ){
+        case 0:
+            [self crPHAssetsController];
+        break;
+        case 1:
+            if( self.crnote.editable == CRNoteEditableYes ){
+                [self contentLock:YES];
+                [self peakMessage:@"Note Locked"];
+            }else{
+                [self contentLock:NO];
+                [self peakMessage:@"Note Unlocked"];
+            }
+            break;
+        case 2:
+            [self makeColorPicker];
+            break;
+        case 4:
+            [self makeFontPicker];
+        break;
+        case 5:
+            [self photoPreview];
+        break;
+        default:
+            break;
     }
 }
 
@@ -525,7 +556,6 @@
         board.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 52, 0);
         board.textContainer.lineFragmentPadding = 0;
         board.tintColor = [UIColor CRColor:97 :125 :138 :1];
-//        board.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightRegular]
         board.textColor = [UIColor colorWithWhite:109 / 255.0 alpha:1];
         board.text = CRNoteInvalilContent;
         board.delegate = self;
@@ -540,7 +570,6 @@
         UITextField *board = [[UITextField alloc] init];
         board.translatesAutoresizingMaskIntoConstraints = NO;
         board.placeholder = CRNoteInvalilTitle;
-//        board.font = [CRNoteApp appFontOfSize:23 weight:UIFontWeightMedium];
         board.textColor = [UIColor colorWithWhite:27 / 255 alpha:1];
         board.tintColor = [UIColor CRColor:97 :125 :138 :1];
         board.delegate = self;
@@ -647,6 +676,29 @@
     }
     
     return YES;
+}
+
+- (void)textViewDidBeginEditing:(UITextView *)textView{
+    self.canAdjust = NO;
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView{
+    self.canAdjust = YES;
+}
+
+- (void)photoPreview{
+    [self presentViewController:({
+        CRPhotoPreviewController *php = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image];
+        php;
+    }) animated:YES completion:nil];
+}
+
+- (void)crPHAssetsController{
+    [self push:({
+        CRPHAssetsController *crph = [CRPHAssetsController new];
+        crph.themeColor = self.themeColor;
+        crph;
+    })];
 }
 
 - (void)dismissSelf{

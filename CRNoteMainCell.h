@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 static NSString *const CRNoteImageCell = @"CR_NOTE_IMAGE_CELL";
+static NSString *const CRNoteImageCellGuide = @"CR_NOTE_IMAGE_CELL_GUIDE";
 
 @interface CRNoteMainCell : UITableViewCell
 
@@ -16,7 +17,9 @@ static NSString *const CRNoteImageCell = @"CR_NOTE_IMAGE_CELL";
 @property( nonatomic, strong ) UILabel *timeTag;
 @property( nonatomic, strong ) UILabel *notetitle;
 @property( nonatomic, strong ) UILabel *subtitle;
-@property( nonatomic, strong ) UIImage *image;
+@property( nonatomic, strong ) UIImageView *crimageview;
+@property( nonatomic, strong ) NSLayoutConstraint *crimageviewGuide;
+
 
 - (instancetype)initWithColorString:(NSString *)color;
 - (instancetype)initWithType:(NSString *)type;

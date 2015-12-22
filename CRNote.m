@@ -37,6 +37,7 @@
                                                 CRNoteTitleString: CRNoteInvalilTitle,
                                                 CRNoteContentString: CRNoteInvalilContent,
                                                 CRNoteColorTypeString: CRThemeColorDefault,
+                                                CRNoteImageNameString: CRNoteInvalilImageName,
                                                 CRNoteTimeCreateString: timeString,
                                                 CRNoteTimeUpdateString: timeString,
                                                 CRNoteTagString: CRNoteInvalilTag,
@@ -54,6 +55,7 @@
         self.title = dictionary[CRNoteTitleString];
         self.content = dictionary[CRNoteContentString];
         self.colorType = dictionary[CRNoteColorTypeString];
+        self.imageName = dictionary[CRNoteImageNameString];
         self.timeCreate = dictionary[CRNoteTimeCreateString];
         self.timeUpdate = dictionary[CRNoteTimeUpdateString];
         self.fontname = dictionary[CRNoteFontnameString];
