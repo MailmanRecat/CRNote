@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CRNoteDebug.h"
 
 static NSString *const CRNoteEditableYes = @"CR_NOTE_EDITABLE_YES";
 static NSString *const CRNoteEditableNO  = @"CR_NOTE_EDITABLE_NO";
@@ -16,7 +17,8 @@ static NSString *const CRNoteInvalilTitle = @"Untitled";
 static NSString *const CRNoteInvalilContent = @"Note";
 static NSString *const CRNoteInvalilImageName = @"NoImage";
 static NSString *const CRNoteInvalilTag = @"Tag";
-static NSString *const CRNoteTypeDefault = @"defualt";
+static NSString *const CRNoteTypeDefault = @"CR_NOTE_TYPE_DEFAULT";
+static NSString *const CRNoteTypeImage   = @"CR_NOTE_TYPE_IMAGE";
 static NSString *const CRNoteFontnameDefault = @"Roboto-Regular";
 static NSString *const CRNoteFontsizeDefault = @"21";
 
@@ -48,7 +50,12 @@ static NSString *const CRNoteEditableString = @"CR_NOTE_EDITABLE_STRING";
 @property( nonatomic, strong ) NSString *tag;
 @property( nonatomic, strong ) NSString *type;
 
+@property( nonatomic, strong ) NSData *imageData;
+
 + (instancetype)defaultNote;
 - (instancetype)initFromDictionary:(NSDictionary *)dictionary;
+
++ (NSString *)currentTimeString;
++ (void)logCRNote:(CRNote *)note;
 
 @end

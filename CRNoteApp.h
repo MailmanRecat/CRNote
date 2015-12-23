@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "UIColor+CRTheme.h"
+#import "CRNoteDebug.h"
 
 @interface CRNoteApp : NSObject
 

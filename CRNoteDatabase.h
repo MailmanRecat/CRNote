@@ -16,7 +16,8 @@
 + (BOOL)insertNote:(CRNote *)note;
 + (BOOL)deleteNote:(CRNote *)note;
 + (BOOL)updateNote:(CRNote *)note;
++ (BOOL)removeAllNote:(BOOL)remove;
 
-+ (NSString *)pathContentsOfFile:(NSString *)path;
++ (void)runTest;
 
 @end

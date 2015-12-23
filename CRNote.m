@@ -14,23 +14,7 @@
 
 + (instancetype)defaultNote{
     
-    NSString *(^formatStringFromNumber)(NSUInteger) = ^(NSUInteger n){
-        return n < 10 ? [NSString stringWithFormat:@"0%ld", n] : [NSString stringWithFormat:@"%ld", n];
-    };
-    
-    NSString *(^timeStringWithComponents)(NSDateComponents *) = ^(NSDateComponents *t){
-        return ({
-            NSMutableString *string = [[NSMutableString alloc] init];
-            [string appendString:formatStringFromNumber(t.year)];
-            [string appendString:formatStringFromNumber(t.month)];
-            [string appendString:formatStringFromNumber(t.day)];
-            [string appendString:formatStringFromNumber(t.hour)];
-            [string appendString:formatStringFromNumber(t.minute)];
-            (NSString *)string;
-        });
-    };
-    
-    NSString *timeString = timeStringWithComponents([TimeTalkerBird currentDate]);
+    NSString *timeString = [CRNote currentTimeString];
     
     return [[CRNote alloc] initFromDictionary:@{
                                                 CRNoteIDString: CRNoteInvalidID,
@@ -65,6 +49,46 @@
         self.type = dictionary[CRNoteTypeString];
     }
     return self;
+}
+
++ (NSString *)currentTimeString{
+    NSString *(^formatStringFromNumber)(NSUInteger) = ^(NSUInteger n){
+        return n < 10 ? [NSString stringWithFormat:@"0%ld", n] : [NSString stringWithFormat:@"%ld", n];
+    };
+    
+    NSString *(^timeStringWithComponents)(NSDateComponents *) = ^(NSDateComponents *t){
+        return ({
+            NSMutableString *string = [[NSMutableString alloc] init];
+            [string appendString:formatStringFromNumber(t.year)];
+            [string appendString:formatStringFromNumber(t.month)];
+            [string appendString:formatStringFromNumber(t.day)];
+            [string appendString:formatStringFromNumber(t.hour)];
+            [string appendString:formatStringFromNumber(t.minute)];
+            (NSString *)string;
+        });
+    };
+    
+    return timeStringWithComponents([TimeTalkerBird currentDate]);
+}
+
++ (void)logCRNote:(CRNote *)note{
+    if( [CRNoteDebug isDebug] == NO ) return;
+    
+    NSLog(@"crnote: %@ start log", note);
+    NSLog(@"%@", note.noteID);
+    NSLog(@"%@", note.title);
+    NSLog(@"%@", note.content);
+    NSLog(@"%@", note.colorType);
+    NSLog(@"%@", note.imageName);
+    NSLog(@"%@", note.timeCreate);
+    NSLog(@"%@", note.timeUpdate);
+    NSLog(@"%@", note.fontname);
+    NSLog(@"%@", note.fontsize);
+    NSLog(@"%@", note.editable);
+    NSLog(@"%@", note.tag);
+    NSLog(@"%@", note.type);
+//    NSLog(@"%@", note.imageData);
+    NSLog(@"crnote: %@ end log", note);
 }
 
 @end

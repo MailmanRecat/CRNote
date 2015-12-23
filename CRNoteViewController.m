@@ -50,7 +50,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 @property( nonatomic, strong ) UITextField *titleBoard;
 @property( nonatomic, assign ) CGFloat lastPointMark;
 
-@property( nonatomic, strong ) CRColorPickController *colorPicker;
 @property( nonatomic, strong ) NSMutableArray<UIColor *> *colorQueue;
 
 @property( nonatomic, assign ) BOOL canAdjust;
@@ -69,14 +68,35 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     return self;
 }
 
+-(NSArray<id<UIPreviewActionItem>> *)previewActionItems {
+    
+    UIPreviewAction *deleteAction = [UIPreviewAction actionWithTitle:@"Delete" style:UIPreviewActionStyleDestructive handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewController) {
+        
+        if( self.previewActionHandler && [self.previewActionHandler respondsToSelector:@selector(notePreviewAction:fromController:)] ){
+            [self.previewActionHandler notePreviewAction:action.title fromController:previewController];
+        }
+        
+    }];
+
+    UIPreviewAction *cancel = [UIPreviewAction actionWithTitle:@"Cancel" style:UIPreviewActionStyleDefault handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewController){
+        
+        if( self.previewActionHandler && [self.previewActionHandler respondsToSelector:@selector(notePreviewAction:fromController:)] ){
+            [self.previewActionHandler notePreviewAction:action.title fromController:previewController];
+        }
+    }];
+    
+    UIPreviewActionGroup *delete = [UIPreviewActionGroup actionGroupWithTitle:@"Delete" style:UIPreviewActionStyleDestructive actions:@[ deleteAction, cancel ]];
+    
+    return @[ delete ];
+}
+
 - (void)viewDidLoad{
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor whiteColor];
-    if( !self.themeColor ){
-        self.themeColor = [UIColor themeColorFromString:CRThemeColorDefault];
-        self.themeString = CRThemeColorDefault;
-    }
+    self.themeColorString = self.crnote.colorType;
+    self.themeColor = [UIColor themeColorFromString:self.themeColorString];
+        
     self.canAdjust = YES;
     self.isFirstTimeViewAppear = YES;
     
@@ -85,9 +105,13 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [self makePeak];
     
     if( [self.crnote.imageName isEqualToString:CRNoteInvalilImageName] == NO ){
-        [self makeBear];
-        self.bearCache = [UIImage imageNamed:@"bear.jpg"];
-        self.parkBear.image = self.bearCache;
+        NSString *path = [NSString stringWithFormat:@"%@/Documents/CRNoteImages/%@", NSHomeDirectory(), self.crnote.imageName];
+        
+        if( [[NSFileManager defaultManager] fileExistsAtPath:path]){
+            [self makeBear];
+            self.bearCache = [UIImage imageWithContentsOfFile:path];
+            self.parkBear.image = self.bearCache;
+        }
     }
     
     [self addNotificationObserver];
@@ -110,24 +134,34 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     if( self.isFirstTimeViewAppear )
         [self viewWillFristTimeAppear];
     
-    self.peakButtonSave.enabled = NO;
+    if( self.isPreview ){
+        self.dismissButton.hidden = YES;
+        self.peak.hidden = YES;
+    }else{
+        self.dismissButton.hidden = NO;
+        self.peak.hidden = NO;
+    }
 }
 
 - (void)viewWillFristTimeAppear{
-    self.textBoard.textColor =
-    ([self.textBoard.text isEqualToString:@""] || [self.textBoard.text isEqualToString:CRNoteInvalilContent]) ?
-    [UIColor colorWithWhite:109 alpha:255.0] : [UIColor colorWithWhite:17 / 255.0 alpha:1];
     
     if( self.crnote.editable == CRNoteEditableNO )
-        [self.peakButtonLock setTitle:[UIFont mdiLock] forState:UIControlStateNormal];
+        [self contentLock:YES];
     
     self.textBoard.font = self.titleBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
-    if( ![self.crnote.content isEqualToString:CRNoteInvalilContent] )
-        self.textBoard.text = self.crnote.content;
+    if( [self.crnote.content isEqualToString:CRNoteInvalilContent] )
+        [self.peakButtonCopy setTitle:[UIFont mdiContentPaste] forState:UIControlStateNormal];
+    
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
         self.parkTitle.text = self.titleBoard.text = self.crnote.title;
     
+    self.textBoard.text = self.crnote.content;
+    self.textBoard.tintColor = self.themeColor;
+    
+    self.textBoard.textColor =
+    ([self.textBoard.text isEqualToString:@""] || [self.textBoard.text isEqualToString:CRNoteInvalilContent]) ?
+    [UIColor colorWithWhite:109 / 255.0 alpha:1] : [UIColor colorWithWhite:17 / 255.0 alpha:1];
 }
 
 - (void)viewDidAppear:(BOOL)animated{
@@ -184,12 +218,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)makeColorPicker{
-    if( self.themeString )
-        self.colorPicker.currentColorString = self.themeString;
     
     CRColorPickController *picker = [[CRColorPickController alloc] init];
-    if( self.themeString )
-        self.colorPicker.currentColorString = self.themeString;
+    picker.currentColorString = self.themeColorString;
     
     [self push:picker];
 }
@@ -223,8 +254,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          self.floatingActionCheck.transform = CGAffineTransformMakeScale(1, 1);
                          viewController.view.frame = self.view.frame;
                          
-                         if( shouldLayoutPark )
+                         if( shouldLayoutPark ){
                              [self.park layoutIfNeeded];
+                             [self adjustSunlight];
+                         }
                          
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
@@ -261,11 +294,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)updateThemeColor:(UIColor *)color string:(NSString *)string{
     
-    self.themeString = string;
-    self.themeColor = color;
+    self.themeColorString = self.crnote.colorType = string;
+    self.textBoard.tintColor = self.themeColor = color;
     [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
     
-    if( [self.crnote.imageName isEqualToString:CRNoteInvalilImageName] ){
+    if( self.bearCache == nil ){
         if( !self.colorQueue ) self.colorQueue = [NSMutableArray new];
         
         [self.colorQueue addObject:color];
@@ -282,20 +315,33 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
 }
 
-- (void)updateNoteCover:(UIImage *)image path:(NSString *)path{
-    if( image && path ){
-        if( !self.bearCache ){
-            [self makeBear];
-            self.bearCache = image;
-        }
-        
-        self.parkBear.image = image;
-    }else{
-        if( self.bearCache )
-            self.parkBear.image = self.bearCache;
-        
+- (void)updateNoteCoverCanceled:(BOOL)canceled{
+    if( canceled ){
+        [self unmakeBear];
         [self pop];
+    }else{
+        self.bearCache = self.parkBear.image;
     }
+}
+
+- (void)previewNoteCover:(NSData *)imageData{
+    if( !self.bearCache )
+        [self makeBear];
+    
+    self.parkBear.image = [UIImage imageWithData:imageData];
+    self.crnote.imageData = imageData;
+}
+
+- (void)makeCopy{
+    [UIPasteboard generalPasteboard].string = self.textBoard.text;
+    [self peakMessage:@"Content copied"];
+}
+
+- (void)makePaste{
+    self.textBoard.text = [UIPasteboard generalPasteboard].string;
+    [self.peakButtonCopy setTitle:[UIFont mdiContentCopy] forState:UIControlStateNormal];
+    [self.textBoard setTextColor:[UIColor colorWithWhite:17 / 255.0 alpha:1]];
+    [self peakMessage:@"Content Pasted"];
 }
 
 - (void)parkSunset{
@@ -429,7 +475,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 - (void)unmakeBear{
     [self.parkBear removeFromSuperview];
     self.bearCache = nil;
-    self.crnote.imageName = CRNoteInvalilImageName;
+    self.crnote.imageData = nil;
 }
 
 - (void)makePeak{
@@ -561,6 +607,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     switch( tag ){
         case 0:
+            if( [self.peakButtonCopy.titleLabel.text isEqualToString:[UIFont mdiContentCopy]] )
+                [self makeCopy];
+            else
+                [self makePaste];
         break;
         case 1:
             if( self.crnote.editable == CRNoteEditableYes ){
@@ -574,6 +624,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         case 2:
             [self makeColorPicker];
             break;
+        case 3:
+            [self makeCRNoteSave];
+        break;
         case 4:
             [self makeFontPicker];
         break;
@@ -605,7 +658,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.lastPointMark = 0;
     
-    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
+//    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
     
     self.titleBoard = ({
         UITextField *board = [[UITextField alloc] init];
@@ -714,7 +767,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     if( [text isEqualToString:CRNoteInvalilContent] || [text isEqualToString:@""] ){
         textView.textColor = [UIColor colorWithWhite:109 / 255.0 alpha:1];
         textView.text = CRNoteInvalilContent;
-    }
+        [self.peakButtonCopy setTitle:[UIFont mdiContentPaste] forState:UIControlStateNormal];
+    }else
+        [self.peakButtonCopy setTitle:[UIFont mdiContentCopy] forState:UIControlStateNormal];
     
     return YES;
 }
@@ -757,6 +812,25 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }else if( status == PHAuthorizationStatusRestricted ){
         [self peakMessage:@"Library access denied."];
     }
+}
+
+- (void)makeCRNoteSave{
+    
+    self.crnote.title = self.titleBoard.text;
+    self.crnote.content = self.textBoard.text;
+    self.crnote.timeUpdate = [CRNote currentTimeString];
+    
+    [CRNote logCRNote:self.crnote];
+    
+    BOOL save;
+    if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
+        save = [CRNoteDatabase insertNote:self.crnote];
+    else
+        save = [CRNoteDatabase updateNote:self.crnote];
+    
+//    NSLog(@"save note %d", save);
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)dismissSelf{

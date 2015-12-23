@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-static NSString *const CRNoteImageCell = @"CR_NOTE_IMAGE_CELL";
+static NSString *const CR_NOTE_IMAGE_CELL_REUSE_ID = @"CR_NOTE_IMAGE_CELL_REUSE_ID";
 static NSString *const CRNoteImageCellGuide = @"CR_NOTE_IMAGE_CELL_GUIDE";
 
 @interface CRNoteMainCell : UITableViewCell

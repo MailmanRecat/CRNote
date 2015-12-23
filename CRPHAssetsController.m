@@ -22,6 +22,8 @@
 @property( nonatomic, assign ) CGFloat heightOfCell;
 @property( nonatomic, strong ) NSIndexPath *crindexPath;
 
+@property( nonatomic, assign ) BOOL isCancel;
+
 @end
 
 @implementation CRPHAssetsController
@@ -58,10 +60,11 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     self.heightOfCell = STATUS_BAR_HEIGHT + 56 + 72;
+    self.isCancel = NO;
     
     PHFetchOptions *PHO = [[PHFetchOptions alloc] init];
     PHO.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
-    self.PHResult = [PHAsset fetchAssetsWithOptions:PHO];
+    self.PHResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:PHO];
     
     [self makeCRBear];
     [self makeCancelButton];
@@ -74,6 +77,15 @@
     self.crBear.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1];
 }
 
+- (void)viewWillDisappear:(BOOL)animated{
+    if( self.isCancel == NO ){
+        if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
+            CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
+            [notevc updateNoteCoverCanceled:NO];
+        }
+    }
+}
+
 - (void)makeCancelButton{
     self.cancelButton = ({
         UIButton *cancel = [[UIButton alloc] init];
@@ -83,7 +95,7 @@
         [cancel setTitle:@"Cancel" forState:UIControlStateNormal];
         [cancel setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
         [cancel makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
-        [cancel addTarget:self action:@selector(dismissSelf) forControlEvents:UIControlEventTouchUpInside];
+        [cancel addTarget:self action:@selector(makeCancel) forControlEvents:UIControlEventTouchUpInside];
         cancel;
     });
     
@@ -92,13 +104,21 @@
     [CRLayout view:@[self.cancelButton, self.view] type:CREdgeLeft | CREdgeBottom | CREdgeRight];
 }
 
+- (void)makeCancel{
+    if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
+        CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
+        self.isCancel = YES;
+        [notevc updateNoteCoverCanceled:YES];
+    }
+}
+
 - (void)makeCRBear{
     self.crBear = ({
         UITableView *bear = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, 0, 0) style:UITableViewStylePlain];
         bear.translatesAutoresizingMaskIntoConstraints = NO;
         bear.sectionFooterHeight = 0.0f;
         bear.sectionHeaderHeight = 0.0f;
-        bear.contentInset = UIEdgeInsetsMake(STATUS_BAR_HEIGHT + 56 + 72, 0, 52, 0);
+        bear.contentInset = UIEdgeInsetsMake(STATUS_BAR_HEIGHT + 56 + 72 - 2, 0, 52, 0);
         bear.contentOffset = CGPointMake(0, -(56 + STATUS_BAR_HEIGHT + 72));
         bear.showsHorizontalScrollIndicator = bear.showsVerticalScrollIndicator = NO;
         bear.backgroundColor = [UIColor clearColor];
@@ -162,20 +182,21 @@
     
     if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
         CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-        [[PHImageManager defaultManager] requestImageForAsset:[self.PHResult objectAtIndex:indexPath.row]
-                                                   targetSize:PHImageManagerMaximumSize
-                                                  contentMode:PHImageContentModeAspectFill
-                                                      options:nil
-                                                resultHandler:^(UIImage *image, NSDictionary *info){
-                                                    [notevc updateNoteCover:image path:@"path"];
-                                                }];
-    }
-}
-
-- (void)dismissSelf{
-    if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
-        CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-        [notevc updateNoteCover:nil path:nil];
+        PHImageRequestOptions *PHO = [[PHImageRequestOptions alloc] init];
+        PHO.resizeMode = PHImageRequestOptionsResizeModeExact;
+        
+        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:indexPath.row]
+                                                          options:PHO
+                                                    resultHandler:
+         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
+             CGFloat size = imageData.length / 1024 / 1024.0;
+             if( size > 1 ){
+                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 1 / size);
+             }
+//             NSLog(@"%.2f %f %.2f", size, 1 / size, imageData.length / 1024 / 1024.0);
+//             [notevc updateNoteCover:[UIImage imageWithData:imageData] path:@"path"];
+             [notevc previewNoteCover:imageData];
+         }];
     }
 }
 

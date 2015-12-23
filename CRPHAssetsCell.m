@@ -11,6 +11,9 @@
 
 @interface CRPHAssetsCell()
 
+@property( nonatomic, strong ) CALayer *borderTop;
+@property( nonatomic, strong ) CALayer *borderBottom;
+
 @end
 
 @implementation CRPHAssetsCell
@@ -40,9 +43,17 @@
         dot;
     });
     
+    self.borderTop = [CALayer layer];
+    self.borderBottom = [CALayer layer];
+    
+    self.borderTop.backgroundColor = self.borderBottom.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1].CGColor;
+    
     self.clipsToBounds = YES;
     [self.contentView addSubview:self.crimagev];
     [self.contentView addSubview:self.dot];
+    
+    [self.contentView.layer addSublayer:self.borderTop];
+    [self.contentView.layer addSublayer:self.borderBottom];
 }
 
 - (void)makeLayout{
@@ -55,6 +66,13 @@
     [self.dot.heightAnchor constraintEqualToConstant:40].active = YES;
     [self.dot.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor].active = YES;
     [self.dot.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
+}
+
+- (void)layoutSubviews{
+    CGRect frame = self.frame;
+    
+    self.borderTop.frame = CGRectMake(0, 0, frame.size.width, 2);
+    self.borderBottom.frame = CGRectMake(0, frame.size.height - 2, frame.size.width, 2);
 }
 
 - (void)statusON{

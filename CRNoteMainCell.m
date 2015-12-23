@@ -22,6 +22,7 @@
         [self makeLayout];
         
         self.wrapper.backgroundColor = [UIColor themeColorFromString:colorString];
+        self.timeTag.textColor = self.wrapper.backgroundColor;
     }
     return self;
 }
@@ -31,7 +32,7 @@
     if( self ){
         [self initClass];
         
-        if( type == CRNoteImageCell ){
+        if( type == CR_NOTE_IMAGE_CELL_REUSE_ID ){
             self.crimageview = ({
                 UIImageView *iv = [[UIImageView alloc] init];
                 iv.translatesAutoresizingMaskIntoConstraints = NO;
@@ -94,13 +95,13 @@
 - (void)makeLayout{
     CGFloat classNameHeight = 20;
     
-    [self.timeTag.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10].active = YES;
+    [self.timeTag.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
     [self.timeTag.heightAnchor constraintEqualToConstant:32].active = YES;
     [self.timeTag.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:16].active = YES;
-    [self.timeTag.widthAnchor constraintEqualToConstant:72].active = YES;
+    [self.timeTag.widthAnchor constraintEqualToConstant:64].active = YES;
     [self.timeTag.rightAnchor constraintEqualToAnchor:self.wrapper.leftAnchor constant:-8].active = YES;
-    [self.wrapper.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10].active = YES;
-    [self.wrapper.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-10].active = YES;
+    [self.wrapper.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
+    [self.wrapper.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-8].active = YES;
     [self.wrapper.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-16].active = YES;
     [self.notetitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
     [self.notetitle.bottomAnchor constraintEqualToAnchor:self.subtitle.topAnchor].active = YES;

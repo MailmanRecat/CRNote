@@ -8,13 +8,24 @@
 
 #import "CRTestingFunction.h"
 #import "CRNote.h"
+#import "CRNoteDatabase.h"
 
 @implementation CRTestingFunction
 
 + (void)runTest{
     
-    NSArray *test = [[NSUserDefaults standardUserDefaults] objectForKey:@"dick"];
+    [CRNoteDatabase runTest];
     
+//    NSLog(@"%d", [CRNoteDatabase removeAllNote:YES]);
+    
+    NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNoteImages/", NSHomeDirectory()]];
+    
+    NSString *path;
+    while( (path = [enmu nextObject]) != nil ){
+        
+        NSLog(@"%@", path);
+        
+    }
 }
 
 @end
