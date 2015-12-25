@@ -46,8 +46,10 @@
 - (void)loadImageNUmber{
     
     NSString *basePath = [NSString stringWithFormat:@"%@/Documents/CRNoteImages/", NSHomeDirectory()];
+    NSString *basethum = [NSString stringWithFormat:@"%@/Documents/CRNoteThumbnailImages/", NSHomeDirectory()];
     
     NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:basePath];
+    NSDirectoryEnumerator *thum = [[NSFileManager defaultManager] enumeratorAtPath:basethum];
     
     NSString *once;
     __block NSMutableString *path = [[NSMutableString alloc] initWithString:@" "];
@@ -57,6 +59,21 @@
         [path appendFormat:@"%@", once];
         
         NSData *data = [[NSFileManager defaultManager] contentsAtPath:[NSString stringWithFormat:@"%@%@", basePath, once]];
+        
+        CGFloat len = data.length / 1024 / 1024.0;
+        
+        [path appendFormat:@"   %.2f MB \n ", len];
+    }
+    
+    [path appendFormat:@"%ld \n ", counter];
+    [path appendFormat:@"\n "];
+    
+    counter = 0;
+    while( (once = [thum nextObject]) != nil ){
+        counter++;
+        [path appendFormat:@"%@", once];
+        
+        NSData *data = [[NSFileManager defaultManager] contentsAtPath:[NSString stringWithFormat:@"%@%@", basethum, once]];
         
         CGFloat len = data.length / 1024 / 1024.0;
         

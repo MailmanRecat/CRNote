@@ -120,12 +120,8 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
 + (BOOL)deleteNote:(CRNote *)note synchronize:(BOOL)sync{
     if( [note.noteID isEqualToString:CRNoteInvalidID] ) return NO;
     
-    BOOL delete = YES;
-    if( ![note.imageName isEqualToString:CRNoteInvalilImageName] ){
-        delete = [CRNoteDatabase deleteNoteImageFromName:note.imageName];
-    }
-    
-    if( delete == NO ) return delete;
+    if( ![note.imageName isEqualToString:CRNoteInvalilImageName] )
+        [CRNoteDatabase deleteNoteImageFromName:note.imageName];
     
     __block NSMutableArray *notes = [[NSMutableArray alloc] initWithArray:[CRNoteDatabase selectNoteFromAll]];
     [notes enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger index, BOOL *sS){
@@ -154,17 +150,17 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
 + (BOOL)removeAllNote:(BOOL)remove{
     if( !remove ) return remove;
     
-//    NSString *path = [NSString stringWithFormat:@"%@", [CRNoteDatabase dirPathFromType:CRNoteDatabaseFileReferenceImageType]];
-//    BOOL isDir;
-//    BOOL delete = NO;
-//    if( [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir ){
-//        delete = [[NSFileManager defaultManager] removeItemAtPath:path
-//                                                            error:nil];
-//    }
+    BOOL isDir;
+    NSString *photoPath = [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_IMAGE_HOME_DIRECTORY];
+    if( [[NSFileManager defaultManager] fileExistsAtPath:photoPath isDirectory:&isDir] && isDir )
+        [[NSFileManager defaultManager] removeItemAtPath:photoPath error:nil];
     
-//    if( delete == NO ) return NO;
+    photoPath = [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_IMAGE_NOTE_THUMBNAIL_DIRECTORY];
+    if( [[NSFileManager defaultManager] fileExistsAtPath:photoPath isDirectory:&isDir] && isDir )
+        [[NSFileManager defaultManager] removeItemAtPath:photoPath error:nil];
     
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:CRNoteDatabaseKey];
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:CRNoteDatabaseFileReferenceCounterImageKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     return YES;
@@ -196,11 +192,11 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
 }
 
 + (NSString *)pathFromPhotoname:(NSString *)name{
-    return [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_NOTE_IMAGE_HOME_DIRECTORY, name];
+    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_IMAGE_HOME_DIRECTORY, name];
 }
 
 + (NSString *)pathFromThumbnail:(NSString *)name{
-    return [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_NOTE_IMAGE_NOTE_THUMBNAIL_DIRECTORY, name];
+    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_IMAGE_NOTE_THUMBNAIL_DIRECTORY, name];
 }
 
 + (UIImage *)photoFromPhotoname:(NSString *)name{

@@ -131,10 +131,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     if( [self.crnote.content isEqualToString:CRNoteInvalilContent] )
         [self.peakButtonCopy setTitle:[UIFont mdiContentPaste] forState:UIControlStateNormal];
     
+    self.parkTitle.text = self.crnote.title;
+    
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
-        self.parkTitle.text = self.titleBoard.text = self.crnote.title;
-    else
-        self.parkTitle.text = CRNoteInvalilTitle;
+        self.titleBoard.text = self.crnote.title;
     
     self.textBoard.text = self.crnote.content;
     self.textBoard.tintColor = self.themeColor;
@@ -617,10 +617,12 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)updateTitle{
-    if( [self.titleBoard.text isEqualToString:@""] )
+    if( [self.titleBoard.text isEqualToString:@""] || [self.titleBoard.text isEqualToString:CRNoteInvalilTitle] )
         self.parkTitle.text = CRNoteInvalilTitle;
     else
         self.parkTitle.text = self.titleBoard.text;
+    
+    NSLog(@"update: %@", self.parkTitle.text);
 }
 
 - (void)contentLock:(BOOL)lock{
