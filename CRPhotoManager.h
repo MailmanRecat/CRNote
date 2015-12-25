@@ -19,6 +19,7 @@
 + (PHFetchResult *)photos;
 
 + (NSString *)savePhoto:(NSData *)photo thumbnail:(NSData *)thumbnail;
++ (NSString *)savePhoto:(PHAsset *)photoAsset;
 + (BOOL)deletePhotoFromName:(NSString *)name;
 + (BOOL)removeAllPhotos:(BOOL)remove;
 

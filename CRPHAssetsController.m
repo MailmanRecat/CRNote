@@ -26,7 +26,6 @@
 @property( nonatomic, assign ) CGSize  targetSize;
 @property( nonatomic, assign ) CGFloat heightOfCell;
 
-@property( nonatomic, strong ) CRPHAssetsCell *crcell;
 @property( nonatomic, strong ) NSIndexPath *crindexPath;
 
 @end
@@ -92,22 +91,24 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated{
-    if( self.PHPhotoHandler && self.crcell ){
-        __block NSData *photo;
-        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:self.crindexPath.row]
-                                                          options:nil
-                                                    resultHandler:
-         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
-             CGFloat size = imageData.length / 1024 / 1024.0;
-             if( size > 2.6 ){
-                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 2.6 / size);
-             }
-             photo = imageData;
-             
-             NSData *thumbnail = UIImageJPEGRepresentation(self.crcell.crimagev.image, 0.1);
-             self.PHPhotoHandler(photo, thumbnail, NO);
-         }];
-    }
+//    if( self.PHPhotoHandler && self.crcell ){
+//        __block NSData *photo;
+//        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:self.crindexPath.row]
+//                                                          options:nil
+//                                                    resultHandler:
+//         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
+//             CGFloat size = imageData.length / 1024 / 1024.0;
+//             if( size > 2.6 ){
+//                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 2.6 / size);
+//             }
+//             photo = imageData;
+//             
+//             NSData *thumbnail = UIImageJPEGRepresentation(self.crcell.crimagev.image, 0.1);
+//             self.PHPhotoHandler(photo, thumbnail, NO);
+//         }];
+//    }
+    if( self.PHAssetHandler )
+        self.PHAssetHandler(self.PHResult[self.crindexPath.row]);
 }
 
 - (void)makeCancelButton{
@@ -129,9 +130,8 @@
 }
 
 - (void)cancel{
-    self.crcell = nil;
-    if( self.PHPhotoHandler )
-        self.PHPhotoHandler(nil, nil, YES);
+    if( self.PHAssetHandler )
+        self.PHAssetHandler(nil);
 }
 
 - (void)makeCRBear{
@@ -201,7 +201,6 @@
     cell = [tableView cellForRowAtIndexPath:indexPath];
     cell.checked = YES;
     
-    self.crcell = cell;
     self.crindexPath = indexPath;
     
     if( self.PHPreviewHandler ){

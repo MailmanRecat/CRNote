@@ -88,6 +88,14 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     return nil;
 }
 
++ (NSString *)savePhoto:(PHAsset *)photoAsset{
+    NSDictionary *info = [CRPhotoManager photoFileInfo];
+    
+    
+    
+    return (NSString *)info[CR_PHOTO_NAME_KEY];
+}
+
 + (BOOL)deletePhotoFromName:(NSString *)name{
     NSString *photo = [NSString stringWithFormat:@"%@/%@", [CRPhotoManager pathFromDir:CR_NOTE_PHOTO_DIRECTORY], name];
     NSString *thumbnail = [NSString stringWithFormat:@"%@/%@", [CRPhotoManager pathFromDir:CR_NOTE_THUMBNAIL_DIRECTORY], name];

@@ -13,6 +13,6 @@
 @interface CRPHAssetsController : CRBasicViewController
 
 @property( nonatomic, strong ) void(^PHPreviewHandler)(UIImage *preview);
-@property( nonatomic, strong ) void(^PHPhotoHandler)(NSData *photo, NSData *humbnail, BOOL canceled);
+@property( nonatomic, strong ) void(^PHAssetHandler)(PHAsset *photoAsset);
 
 @end

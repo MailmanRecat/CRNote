@@ -723,7 +723,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image title:self.titleBoard.text];
     preview.photoDeletedHandler = ^{
         self.parkBear.image = nil;
-        [self.crnote setImageData:nil thumbnailData:nil];
+        self.crnote.photoAsset = nil;
     };
     [self presentViewController:preview animated:YES completion:nil];
 }
@@ -763,15 +763,13 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
             self.parkBear.image = priview;
         };
         
-        picker.PHPhotoHandler = ^(NSData *photo, NSData *thumbnail, BOOL canceled){
-            if( canceled ){
+        picker.PHAssetHandler = ^(PHAsset *photoAsset){
+            if( photoAsset )
+                self.crnote.photoAsset = photoAsset;
+            else{
                 [self pop];
                 [self.parkBear setImage:nil];
-                return;
             }
-            
-            [self.crnote setImageData:photo thumbnailData:thumbnail];
-            NSLog(@"%.2f MB %.2f MB", photo.length / 1024 / 1024.0, thumbnail.length / 1024 / 1024.0);
         };
         
         [self push:picker];
@@ -804,13 +802,13 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.crnote.content = self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     
-//    [CRNote logCRNote:self.crnote];
+    [CRNote logCRNote:self.crnote];
     
     BOOL save;
-    if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
-        save = [CRNoteDatabase insertNote:self.crnote];
-    else
-        save = [CRNoteDatabase updateNote:self.crnote];
+//    if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
+//        save = [CRNoteDatabase insertNote:self.crnote];
+//    else
+//        save = [CRNoteDatabase updateNote:self.crnote];
     
 //    NSLog(@"save note %d", save);
     
