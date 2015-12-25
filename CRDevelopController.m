@@ -9,6 +9,7 @@
 #import "CRDevelopController.h"
 #import "CRNoteDatabase.h"
 #import "CRNoteCurrent.h"
+#import "CRPhotoManager.h"
 
 @interface CRDevelopController()
 
@@ -45,8 +46,8 @@
 
 - (void)loadImageNUmber{
     
-    NSString *basePath = [NSString stringWithFormat:@"%@/Documents/CRNoteImages/", NSHomeDirectory()];
-    NSString *basethum = [NSString stringWithFormat:@"%@/Documents/CRNoteThumbnailImages/", NSHomeDirectory()];
+    NSString *basePath = [NSString stringWithFormat:@"%@/Documents/CRNotePhotos/", NSHomeDirectory()];
+    NSString *basethum = [NSString stringWithFormat:@"%@/Documents/CRNoteThumbnails/", NSHomeDirectory()];
     
     NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:basePath];
     NSDirectoryEnumerator *thum = [[NSFileManager defaultManager] enumeratorAtPath:basethum];
@@ -83,14 +84,19 @@
     [path appendFormat:@"%ld \n ", counter];
     [path appendFormat:@"\n "];
     
-    if( self.imageCache ){
-        [self.imageCache enumerateKeysAndObjectsUsingBlock:^(NSString *key, UIImage *obj, BOOL *sS){
-            [path appendFormat:@"%@ %@\n ", key, obj];
-        }];
-    }
+    [[CRPhotoManager defaultManager].photoCache enumerateKeysAndObjectsUsingBlock:^(NSString *key, UIImage *obj, BOOL *sS){
+        [path appendFormat:@"%@ %@\n ", key, obj];
+    }];
     
-    [path appendFormat:@"%ld \n ", [self.imageCache count]];
-    [path appendFormat:@"\n"];
+    [path appendFormat:@"%ld \n ", [[CRPhotoManager defaultManager].photoCache count]];
+    [path appendFormat:@"\n "];
+    
+    [[CRPhotoManager defaultManager].thumbnailCache enumerateKeysAndObjectsUsingBlock:^(NSString *key, UIImage *obj, BOOL *sS){
+        [path appendFormat:@"%@ %@\n ", key, obj];
+    }];
+    
+    [path appendFormat:@"%ld \n ", [[CRPhotoManager defaultManager].thumbnailCache count]];
+    [path appendFormat:@"\n "];
     
     NSArray *notes = [CRNoteCurrent allCRNoteWithFormat:NO];
     [path appendFormat:@"%@\n", notes];

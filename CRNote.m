@@ -51,12 +51,21 @@
     return self;
 }
 
+- (void)setPhotoAsset:(PHAsset *)photoAsset{
+    _photoAsset = photoAsset;
+    
+    if( photoAsset )
+        self.type = CRNoteTypePhoto;
+    else
+        self.type = CRNoteTypeDefault;
+}
+
 - (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail{
     _imageData = imageData;
     _thumbnailData = thumbnail;
     
     if( imageData && thumbnail )
-        self.type = CRNoteTypeImage;
+        self.type = CRNoteTypePhoto;
     else{
         self.type = CRNoteTypeDefault;
     }

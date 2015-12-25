@@ -120,8 +120,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }];
     self.sun.duration = 0.6f;
     
-    if( [self.crnote.type isEqualToString:CRNoteTypeImage] )
-        self.parkBear.image = [CRNoteDatabase photoFromPhotoname:self.crnote.imageName];
+    if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
+//        self.parkBear.image = [CRNoteDatabase photoFromPhotoname:self.crnote.imageName];
     
     if( self.crnote.editable == CRNoteEditableNO )
         [self contentLock:YES];
@@ -568,7 +568,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
             [self fontPick];
         break;
         case 5:
-            [self.crnote.type isEqualToString:CRNoteTypeImage] ? [self photoPreview] : [self photoPick];
+            [self.crnote.type isEqualToString:CRNoteTypePhoto] ? [self photoPreview] : [self photoPick];
         break;
         default:
             break;

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-static NSString *const CR_NOTE_IMAGE_CELL_REUSE_ID = @"CR_NOTE_IMAGE_CELL_REUSE_ID";
+static NSString *const CR_NOTE_PHOTO_CELL_REUSE_ID = @"CR_NOTE_PHOTO_CELL_REUSE_ID";
 static NSString *const CRNoteImageCellGuide = @"CR_NOTE_IMAGE_CELL_GUIDE";
 
 @interface CRNoteMainCell : UITableViewCell
@@ -19,7 +19,6 @@ static NSString *const CRNoteImageCellGuide = @"CR_NOTE_IMAGE_CELL_GUIDE";
 @property( nonatomic, strong ) UILabel *subtitle;
 @property( nonatomic, strong ) UIImageView *crimageview;
 @property( nonatomic, strong ) NSLayoutConstraint *crimageviewGuide;
-
 
 - (instancetype)initWithColorString:(NSString *)color;
 - (instancetype)initWithType:(NSString *)type;

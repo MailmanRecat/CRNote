@@ -6,7 +6,8 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#import <Photos/Photos.h>
+//#import <Photos/Photos.h>
+#import "CRPhotoManager.h"
 #import "CRBasicViewController.h"
 
 @interface CRPHAssetsController : CRBasicViewController

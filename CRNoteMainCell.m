@@ -32,7 +32,7 @@
     if( self ){
         [self initClass];
         
-        if( type == CR_NOTE_IMAGE_CELL_REUSE_ID ){
+        if( type == CR_NOTE_PHOTO_CELL_REUSE_ID ){
             self.crimageview = ({
                 UIImageView *iv = [[UIImageView alloc] init];
                 iv.translatesAutoresizingMaskIntoConstraints = NO;
@@ -94,7 +94,13 @@
 }
 
 - (void)makeLayout{
-    CGFloat classNameHeight = 20;
+    
+    CGFloat titleHeight;
+    if( self.crimageview ){
+        [CRLayout view:@[ self.crimageview, self.wrapper ] type:CREdgeLeft | CREdgeRight | CREdgeTop | CREdgeBottom];
+        titleHeight = 36;
+    }else
+        titleHeight = 20;
     
     [self.timeTag.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
     [self.timeTag.heightAnchor constraintEqualToConstant:32].active = YES;
@@ -104,17 +110,12 @@
     [self.wrapper.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
     [self.wrapper.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-8].active = YES;
     [self.wrapper.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-16].active = YES;
-    [self.notetitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
+    [self.notetitle.heightAnchor constraintEqualToConstant:titleHeight].active = YES;
     [self.notetitle.bottomAnchor constraintEqualToAnchor:self.subtitle.topAnchor].active = YES;
-//    [self.subtitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
     [self.subtitle.bottomAnchor constraintEqualToAnchor:self.wrapper.bottomAnchor constant:-8].active = YES;
     
     [CRLayout view:@[ self.notetitle, self.wrapper ] type:CREdgeTop | CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(8, 8, 0, -8)];
     [CRLayout view:@[ self.subtitle, self.wrapper ] type:CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(0, 8, 0, -8)];
-    
-    if( self.crimageview ){
-        [CRLayout view:@[ self.crimageview, self.wrapper ] type:CREdgeLeft | CREdgeRight | CREdgeTop | CREdgeBottom];
-    }
 }
 
 @end

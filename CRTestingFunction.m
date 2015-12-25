@@ -10,17 +10,19 @@
 #import "CRNote.h"
 #import "CRNoteDatabase.h"
 #import "CRMutableQueue.h"
+#import "CRPhotoManager.h"
 
 @implementation CRTestingFunction
 
 + (void)runTest{
     
     [CRNoteDatabase runTest];
-//    [CRNoteDatabase removeAllNote:YES];
+    [CRPhotoManager runTest];
+    [CRNoteDatabase removeAllNote:YES];
     
-    NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNoteImages/", NSHomeDirectory()]];
+    NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNotePhotos/", NSHomeDirectory()]];
     
-    NSDirectoryEnumerator *enmi = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNoteThumbnailImages/", NSHomeDirectory()]];
+    NSDirectoryEnumerator *enmi = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNoteThumbnails/", NSHomeDirectory()]];
     
     NSMutableString *mutableString = [[NSMutableString alloc] initWithFormat:@" \n "];
     NSString *path, *patc;

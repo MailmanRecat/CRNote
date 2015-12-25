@@ -70,6 +70,8 @@
     PHO.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     self.PHResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:PHO];
     
+    self.PHResult = [CRPhotoManager photos];
+    
     [self makeCRBear];
     [self makeCancelButton];
     [self check3DTouch];
