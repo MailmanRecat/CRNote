@@ -51,6 +51,17 @@
     return self;
 }
 
+- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail{
+    _imageData = imageData;
+    _thumbnailData = thumbnail;
+    
+    if( imageData && thumbnail )
+        self.type = CRNoteTypeImage;
+    else{
+        self.type = CRNoteTypeDefault;
+    }
+}
+
 + (NSString *)currentTimeString{
     NSString *(^formatStringFromNumber)(NSUInteger) = ^(NSUInteger n){
         return n < 10 ? [NSString stringWithFormat:@"0%ld", n] : [NSString stringWithFormat:@"%ld", n];

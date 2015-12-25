@@ -79,6 +79,7 @@
         label.translatesAutoresizingMaskIntoConstraints = NO;
         label.backgroundColor = [UIColor clearColor];
         label.textColor = [UIColor whiteColor];
+        label.numberOfLines = 0;
         label.font = [CRNoteApp appFontOfSize:14 weight:UIFontWeightRegular];
         label;
     });
@@ -105,7 +106,8 @@
     [self.wrapper.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-16].active = YES;
     [self.notetitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
     [self.notetitle.bottomAnchor constraintEqualToAnchor:self.subtitle.topAnchor].active = YES;
-    [self.subtitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
+//    [self.subtitle.heightAnchor constraintEqualToConstant:classNameHeight].active = YES;
+    [self.subtitle.bottomAnchor constraintEqualToAnchor:self.wrapper.bottomAnchor constant:-8].active = YES;
     
     [CRLayout view:@[ self.notetitle, self.wrapper ] type:CREdgeTop | CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(8, 8, 0, -8)];
     [CRLayout view:@[ self.subtitle, self.wrapper ] type:CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(0, 8, 0, -8)];

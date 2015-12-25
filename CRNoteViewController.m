@@ -9,7 +9,6 @@
 #define CR_PEAK_HEIGHT 52.0f
 #define CR_USER_LIBRARY_DENEY @"Library access denied, tap to setting."
 
-#import <Photos/Photos.h>
 #import "CRNoteDatabase.h"
 #import "CRNoteViewController.h"
 #import "CRColorPickController.h"
@@ -90,29 +89,21 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     return @[ delete ];
 }
 
-- (void)viewDidLoad{
-    [super viewDidLoad];
-    
+- (void)viewThenLoad{
     self.view.backgroundColor = [UIColor whiteColor];
     self.themeColorString = self.crnote.colorType;
     self.themeColor = [UIColor themeColorFromString:self.themeColorString];
-        
     self.canAdjust = YES;
     self.isFirstTimeViewAppear = YES;
+}
+
+- (void)viewDidLoad{
+    [super viewDidLoad];
     
+    [self viewThenLoad];
     [self makeTextBoard];
     [self makePark];
     [self makePeak];
-    
-    if( [self.crnote.imageName isEqualToString:CRNoteInvalilImageName] == NO ){
-        NSString *path = [NSString stringWithFormat:@"%@/Documents/CRNoteImages/%@", NSHomeDirectory(), self.crnote.imageName];
-        
-        if( [[NSFileManager defaultManager] fileExistsAtPath:path]){
-            [self makeBear];
-            self.bearCache = [UIImage imageWithContentsOfFile:path];
-            self.parkBear.image = self.bearCache;
-        }
-    }
     
     [self addNotificationObserver];
     [self viewLastLoad];
@@ -128,22 +119,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         self.park.backgroundColor = color;
     }];
     self.sun.duration = 0.6f;
-}
-
-- (void)viewWillAppear:(BOOL)animated{
-    if( self.isFirstTimeViewAppear )
-        [self viewWillFristTimeAppear];
     
-    if( self.isPreview ){
-        self.dismissButton.hidden = YES;
-        self.peak.hidden = YES;
-    }else{
-        self.dismissButton.hidden = NO;
-        self.peak.hidden = NO;
-    }
-}
-
-- (void)viewWillFristTimeAppear{
+    if( [self.crnote.type isEqualToString:CRNoteTypeImage] )
+        self.parkBear.image = [CRNoteDatabase photoFromPhotoname:self.crnote.imageName];
     
     if( self.crnote.editable == CRNoteEditableNO )
         [self contentLock:YES];
@@ -155,6 +133,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
         self.parkTitle.text = self.titleBoard.text = self.crnote.title;
+    else
+        self.parkTitle.text = CRNoteInvalilTitle;
     
     self.textBoard.text = self.crnote.content;
     self.textBoard.tintColor = self.themeColor;
@@ -164,9 +144,16 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [UIColor colorWithWhite:109 / 255.0 alpha:1] : [UIColor colorWithWhite:17 / 255.0 alpha:1];
 }
 
-- (void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-    self.isFirstTimeViewAppear = NO;
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    
+    if( self.isPreview ){
+        self.dismissButton.hidden = YES;
+        self.peak.hidden = YES;
+    }else{
+        self.dismissButton.hidden = NO;
+        self.peak.hidden = NO;
+    }
 }
 
 - (void)addNotificationObserver{
@@ -174,10 +161,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [center addObserver:self
                selector:@selector(willKeyBoardChangeFrame:)
                    name:UIKeyboardWillChangeFrameNotification
-                 object:nil];
-    [center addObserver:self
-               selector:@selector(unmakeBear)
-                   name:CRPhotoPreviewDidDeleteNotification
                  object:nil];
 }
 
@@ -205,24 +188,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)viewEndEdit{
     [self.view endEditing:YES];
-}
-
-- (void)makeFontPicker{
-    [self push:({
-        CRFontController *fontSelecter = [[CRFontController alloc] init];
-        fontSelecter.themeColor = self.themeColor;
-        fontSelecter.selectedFontName = self.crnote.fontname;
-        fontSelecter.selectedFontSize = [self.crnote.fontsize integerValue];
-        fontSelecter;
-    })];
-}
-
-- (void)makeColorPicker{
-    
-    CRColorPickController *picker = [[CRColorPickController alloc] init];
-    picker.currentColorString = self.themeColorString;
-    
-    [self push:picker];
 }
 
 - (void)push:(UIViewController *)viewController{
@@ -315,23 +280,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
 }
 
-- (void)updateNoteCoverCanceled:(BOOL)canceled{
-    if( canceled ){
-        [self unmakeBear];
-        [self pop];
-    }else{
-        self.bearCache = self.parkBear.image;
-    }
-}
-
-- (void)previewNoteCover:(NSData *)imageData{
-    if( !self.bearCache )
-        [self makeBear];
-    
-    self.parkBear.image = [UIImage imageWithData:imageData];
-    self.crnote.imageData = imageData;
-}
-
 - (void)makeCopy{
     [UIPasteboard generalPasteboard].string = self.textBoard.text;
     [self peakMessage:@"Content copied"];
@@ -407,6 +355,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         title;
     });
     
+    self.parkBear = ({
+        UIImageView *iv = [[UIImageView alloc] init];
+        iv.translatesAutoresizingMaskIntoConstraints = NO;
+        iv.contentMode = UIViewContentModeScaleAspectFill;
+        iv.clipsToBounds = YES;
+        iv;
+    });
+    
     self.parkGround = ({
         UIView *ground = [[UIView alloc] init];
         ground.translatesAutoresizingMaskIntoConstraints = NO;
@@ -438,11 +394,12 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.floatingActionCheck.hidden = YES;
     
-    [self.park addAutolayoutSubviews:@[ self.parkGround, self.parkTitle ]];
+    [self.park addAutolayoutSubviews:@[ self.parkGround, self.parkBear, self.parkTitle ]];
     [self.park addSubview:self.dismissButton];
     [self.view addSubview:self.park];
     [self.view addSubview:self.floatingActionCheck];
     
+    [CRLayout view:@[ self.parkBear, self.park ] type:CREdgeAround];
     [CRLayout view:@[ self.parkGround, self.park ] type:CREdgeAround];
     [CRLayout view:@[ self.parkTitle, self.park ] type:CREdgeRight | CREdgeBottom | CREdgeLeft edge:UIEdgeInsetsMake(0, 64, -8, -24)];
     [self.parkTitle.heightAnchor constraintGreaterThanOrEqualToConstant:72].active = YES;
@@ -456,26 +413,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [self.park.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 56 + 72].active = YES;
     self.parkGuide = [self.park.topAnchor constraintEqualToAnchor:self.view.topAnchor];
     self.parkGuide.active = YES;
-}
-
-- (void)makeBear{
-    if( !self.parkBear )
-        self.parkBear = ({
-            UIImageView *iv = [[UIImageView alloc] init];
-            iv.translatesAutoresizingMaskIntoConstraints = NO;
-            iv.contentMode = UIViewContentModeScaleAspectFill;
-            iv.clipsToBounds = YES;
-            iv;
-        });
-       
-    [self.park insertSubview:self.parkBear atIndex:0];
-    [CRLayout view:@[self.parkBear, self.park] type:CREdgeAround];
-}
-
-- (void)unmakeBear{
-    [self.parkBear removeFromSuperview];
-    self.bearCache = nil;
-    self.crnote.imageData = nil;
 }
 
 - (void)makePeak{
@@ -504,7 +441,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.peakButtonLock = makeButton([UIFont mdiLockOpen], 1);
     self.peakButtonColor = makeButton([UIFont mdiPalette], 2);
     self.peakButtonSave = makeButton([UIFont mdiPackageDown], 3);
-    self.peakButtonFont = makeButton([UIFont mdiParking], 4);
+    self.peakButtonFont = makeButton([UIFont mdiFormatSize], 4);
     self.peakButtonImage = makeButton([UIFont mdiFileImageBox], 5);
     
     UIButton *button;
@@ -531,7 +468,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     });
     
     __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
-    [@[ self.peakButtonCopy, self.peakButtonFont, self.peakButtonLock, self.peakButtonImage, self.peakButtonColor, self.peakButtonSave ]
+    [@[ self.peakButtonCopy, self.peakButtonLock, self.peakButtonImage, self.peakButtonFont, self.peakButtonColor, self.peakButtonSave ]
      enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
          obj.translatesAutoresizingMaskIntoConstraints = NO;
          [self.peak addSubview:obj];
@@ -622,19 +559,16 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
             }
             break;
         case 2:
-            [self makeColorPicker];
+            [self colorPick];
             break;
         case 3:
-            [self makeCRNoteSave];
+            [self crnoteSave];
         break;
         case 4:
-            [self makeFontPicker];
+            [self fontPick];
         break;
         case 5:
-            if( self.bearCache )
-                [self photoPreview];
-            else
-                [self crPHAssetsController];
+            [self.crnote.type isEqualToString:CRNoteTypeImage] ? [self photoPreview] : [self photoPick];
         break;
         default:
             break;
@@ -783,44 +717,92 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)photoPreview{
-    [self presentViewController:({
-        CRPhotoPreviewController *php = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image title:self.titleBoard.text];
-        php;
-    }) animated:YES completion:nil];
+    
+    CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image title:self.titleBoard.text];
+    preview.photoDeletedHandler = ^{
+        self.parkBear.image = nil;
+        [self.crnote setImageData:nil thumbnailData:nil];
+    };
+    [self presentViewController:preview animated:YES completion:nil];
 }
 
-- (void)crPHAssetsController{
-    
+- (void)fontPick{
+    [self push:({
+        CRFontController *picker = [[CRFontController alloc] init];
+        picker.themeColor = self.themeColor;
+        picker.selectedFontName = self.crnote.fontname;
+        picker.selectedFontSize = [self.crnote.fontsize integerValue];
+        picker.fontSelectedHandler = ^(NSString *name, NSUInteger size, BOOL unknow){
+            [self updateNoteFont:name size:size];
+        };
+        picker;
+    })];
+}
+
+- (void)colorPick{
+    [self push:({
+        CRColorPickController *picker = [[CRColorPickController alloc] init];
+        picker.currentColorString = self.themeColorString;
+        picker.colorSelectedHandler = ^(UIColor *color, NSString *name){
+            [self updateThemeColor:color string:name];
+        };
+        picker;
+    })];
+}
+
+- (void)photoPick{
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
     
+    void(^push)(void) = ^{
+        CRPHAssetsController *picker = [[CRPHAssetsController alloc] init];
+        picker.themeColor = self.themeColor;
+        
+        picker.PHPreviewHandler = ^(UIImage *priview){
+            self.parkBear.image = priview;
+        };
+        
+        picker.PHPhotoHandler = ^(NSData *photo, NSData *thumbnail, BOOL canceled){
+            if( canceled ){
+                [self pop];
+                [self.parkBear setImage:nil];
+                return;
+            }
+            
+            [self.crnote setImageData:photo thumbnailData:thumbnail];
+            NSLog(@"%.2f MB %.2f MB", photo.length / 1024 / 1024.0, thumbnail.length / 1024 / 1024.0);
+        };
+        
+        [self push:picker];
+    };
+    
     if( status == PHAuthorizationStatusAuthorized ){
-        [self push:({
-            CRPHAssetsController *crph = [CRPHAssetsController new];
-            crph.themeColor = self.themeColor;
-            crph;
-        })];
+        
+        push();
+        
     }else if( status == PHAuthorizationStatusDenied ){
+        
         [self peakMessage:PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING];
+        
     }else if( status == PHAuthorizationStatusNotDetermined ){
+        
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status){
-            [self push:({
-                CRPHAssetsController *crph = [CRPHAssetsController new];
-                crph.themeColor = self.themeColor;
-                crph;
-            })];
+            push();
         }];
+        
     }else if( status == PHAuthorizationStatusRestricted ){
+        
         [self peakMessage:@"Library access denied."];
+        
     }
 }
 
-- (void)makeCRNoteSave{
+- (void)crnoteSave{
     
     self.crnote.title = self.titleBoard.text;
     self.crnote.content = self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     
-    [CRNote logCRNote:self.crnote];
+//    [CRNote logCRNote:self.crnote];
     
     BOOL save;
     if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )

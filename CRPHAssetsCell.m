@@ -75,12 +75,14 @@
     self.borderBottom.frame = CGRectMake(0, frame.size.height - 2, frame.size.width, 2);
 }
 
-- (void)statusON{
-    self.dot.text = [UIFont mdiCheckboxMarkedCircle];
-}
-
-- (void)statusOFF{
-    self.dot.text = [UIFont mdiCheckboxBlankCircleOutline];
+- (void)setChecked:(BOOL)checked{
+    if( _checked == checked ) return;
+    
+    _checked = checked;
+    if( checked )
+        self.dot.text = [UIFont mdiCheckboxMarkedCircle];
+    else
+        self.dot.text = [UIFont mdiCheckboxBlankCircleOutline];
 }
 
 @end

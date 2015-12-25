@@ -12,9 +12,10 @@
 
 @property( nonatomic, strong ) NSDictionary *colors;
 @property( nonatomic, strong ) NSString *currentColorString;
-@property( nonatomic, strong ) UIColor *themeColor;
 
 @property( nonatomic, strong ) UIColor *selectedColor;
 @property( nonatomic, strong ) NSString *selectedColorname;
+
+@property( nonatomic, strong ) void(^colorSelectedHandler)(UIColor *, NSString *);
 
 @end

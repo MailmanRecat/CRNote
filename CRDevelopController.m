@@ -27,7 +27,7 @@
     dismiss.backgroundColor = [UIColor randomColor];
     [self.view addSubview:dismiss];
     
-    UITextView *text = [[UITextView alloc] initWithFrame:CGRectMake(0, 76, self.view.frame.size.width, self.view.frame.size.height - 76)];
+    UITextView *text = [[UITextView alloc] initWithFrame:CGRectMake(0, 76, self.view.frame.size.width, self.view.frame.size.height - 76 - 56)];
     text.backgroundColor = [UIColor blackColor];
     text.textColor = [UIColor whiteColor];
     text.editable = NO;

@@ -24,11 +24,6 @@
 
 - (instancetype)initFromCRNote:(CRNote *)note themeColor:(UIColor *)themeColor;
 
-- (void)updateThemeColor:(UIColor *)color string:(NSString *)string;
-- (void)updateNoteFont:(NSString *)name size:(NSUInteger)size;
-- (void)updateNoteCoverCanceled:(BOOL)canceled;
-- (void)previewNoteCover:(NSData *)imageData;
-
 - (void)parkSunset;
 - (void)parkSunrise;
 

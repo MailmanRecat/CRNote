@@ -317,8 +317,9 @@
         self.selectedFontSize = indexPath.row + 12;
     }
     
-    CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-    [notevc updateNoteFont:self.selectedFontName size:self.selectedFontSize];
+    if( self.fontSelectedHandler ){
+        self.fontSelectedHandler( self.selectedFontName, self.selectedFontSize, NO );
+    }
 }
 
 @end

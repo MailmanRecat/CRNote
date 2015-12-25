@@ -10,6 +10,7 @@
 
 @interface CRFontController : CRBasicViewController
 
+@property( nonatomic, strong ) void(^fontSelectedHandler)(NSString *, NSUInteger, BOOL);
 @property( nonatomic, strong ) NSString *selectedFontName;
 @property( nonatomic, assign ) NSUInteger selectedFontSize;
 

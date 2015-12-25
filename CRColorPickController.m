@@ -35,7 +35,6 @@
     self.colors = [UIColor themeColors];
     
     [self makeCraigBear];
-//    [self makePark];
 }
 
 - (void)viewWillAppear:(BOOL)animated{
@@ -141,8 +140,9 @@
     self.selectedColor = cell.dot.textColor;
     self.selectedColorname = cell.dotname.text;
     
-    CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-    [notevc updateThemeColor:self.selectedColor string:self.selectedColorname];
+    if( self.colorSelectedHandler ){
+        self.colorSelectedHandler( self.selectedColor, self.selectedColorname );
+    }
 }
 
 @end

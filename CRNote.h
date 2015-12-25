@@ -51,6 +51,9 @@ static NSString *const CRNoteEditableString = @"CR_NOTE_EDITABLE_STRING";
 @property( nonatomic, strong ) NSString *type;
 
 @property( nonatomic, strong ) NSData *imageData;
+@property( nonatomic, strong ) NSData *thumbnailData;
+
+- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail;
 
 + (instancetype)defaultNote;
 - (instancetype)initFromDictionary:(NSDictionary *)dictionary;

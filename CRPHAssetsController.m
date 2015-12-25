@@ -6,7 +6,11 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#import <Photos/Photos.h>
+#define CGSize_iphone4_X( s )  CGSizeMake(320 * s, 148 * s);
+#define CGSize_iphone5_X( s )  CGSizeMake(320 * s, 148 * s);
+#define CGSize_iphone6_X( s )  CGSizeMake(375 * s, 148 * s);
+#define CGSize_iphone6s_X( s ) CGSizeMake(414 * (s + 1), 148 * (s + 1));
+
 #import "CRPHAssetsController.h"
 #import "CRPHAssetsCell.h"
 #import "CRNoteViewController.h"
@@ -19,10 +23,11 @@
 
 @property( nonatomic, strong ) PHFetchResult *PHResult;
 
+@property( nonatomic, assign ) CGSize  targetSize;
 @property( nonatomic, assign ) CGFloat heightOfCell;
-@property( nonatomic, strong ) NSIndexPath *crindexPath;
 
-@property( nonatomic, assign ) BOOL isCancel;
+@property( nonatomic, strong ) CRPHAssetsCell *crcell;
+@property( nonatomic, strong ) NSIndexPath *crindexPath;
 
 @end
 
@@ -60,7 +65,6 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     self.heightOfCell = STATUS_BAR_HEIGHT + 56 + 72;
-    self.isCancel = NO;
     
     PHFetchOptions *PHO = [[PHFetchOptions alloc] init];
     PHO.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
@@ -69,6 +73,14 @@
     [self makeCRBear];
     [self makeCancelButton];
     [self check3DTouch];
+    
+    if( self.view.frame.size.width == 320 ){
+        self.targetSize = CGSize_iphone5_X(2)
+    }else if( self.view.frame.size.width == 375 ){
+        self.targetSize = CGSize_iphone6_X(2)
+    }else if( self.view.frame.size.width == 414 ){
+        self.targetSize = CGSize_iphone6s_X(2)
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated{
@@ -78,11 +90,21 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated{
-    if( self.isCancel == NO ){
-        if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
-            CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-            [notevc updateNoteCoverCanceled:NO];
-        }
+    if( self.PHPhotoHandler && self.crcell ){
+        __block NSData *photo;
+        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:self.crindexPath.row]
+                                                          options:nil
+                                                    resultHandler:
+         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
+             CGFloat size = imageData.length / 1024 / 1024.0;
+             if( size > 2.6 ){
+                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 2.6 / size);
+             }
+             photo = imageData;
+             
+             NSData *thumbnail = UIImageJPEGRepresentation(self.crcell.crimagev.image, 0.1);
+             self.PHPhotoHandler(photo, thumbnail, NO);
+         }];
     }
 }
 
@@ -95,7 +117,7 @@
         [cancel setTitle:@"Cancel" forState:UIControlStateNormal];
         [cancel setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
         [cancel makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
-        [cancel addTarget:self action:@selector(makeCancel) forControlEvents:UIControlEventTouchUpInside];
+        [cancel addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchUpInside];
         cancel;
     });
     
@@ -104,12 +126,10 @@
     [CRLayout view:@[self.cancelButton, self.view] type:CREdgeLeft | CREdgeBottom | CREdgeRight];
 }
 
-- (void)makeCancel{
-    if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
-        CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-        self.isCancel = YES;
-        [notevc updateNoteCoverCanceled:YES];
-    }
+- (void)cancel{
+    self.crcell = nil;
+    if( self.PHPhotoHandler )
+        self.PHPhotoHandler(nil, nil, YES);
 }
 
 - (void)makeCRBear{
@@ -149,12 +169,12 @@
         }
         
         if( indexPath == self.crindexPath )
-            [PHC statusON];
+            PHC.checked = YES;
         else
-            [PHC statusOFF];
+            PHC.checked = NO;
         
         [[PHImageManager defaultManager] requestImageForAsset:[self.PHResult objectAtIndex:indexPath.row]
-                                                   targetSize:CGSizeMake(self.view.frame.size.width, self.heightOfCell)
+                                                   targetSize:self.targetSize
                                                   contentMode:PHImageContentModeAspectFill
                                                       options:nil
                                                 resultHandler:^(UIImage *image, NSDictionary *info){
@@ -170,33 +190,20 @@
     if( indexPath == self.crindexPath )
         return;
     
-    CRPHAssetsCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    [cell statusON];
-    
+    CRPHAssetsCell *cell;
     if( self.crindexPath ){
         cell = [tableView cellForRowAtIndexPath:self.crindexPath];
-        [cell statusOFF];
+        cell.checked = NO;
     }
     
+    cell = [tableView cellForRowAtIndexPath:indexPath];
+    cell.checked = YES;
+    
+    self.crcell = cell;
     self.crindexPath = indexPath;
     
-    if( [self.parentViewController isKindOfClass:[CRNoteViewController class]] ){
-        CRNoteViewController *notevc = (CRNoteViewController *)self.parentViewController;
-        PHImageRequestOptions *PHO = [[PHImageRequestOptions alloc] init];
-        PHO.resizeMode = PHImageRequestOptionsResizeModeExact;
-        
-        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:indexPath.row]
-                                                          options:PHO
-                                                    resultHandler:
-         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
-             CGFloat size = imageData.length / 1024 / 1024.0;
-             if( size > 1 ){
-                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 1 / size);
-             }
-//             NSLog(@"%.2f %f %.2f", size, 1 / size, imageData.length / 1024 / 1024.0);
-//             [notevc updateNoteCover:[UIImage imageWithData:imageData] path:@"path"];
-             [notevc previewNoteCover:imageData];
-         }];
+    if( self.PHPreviewHandler ){
+        self.PHPreviewHandler( cell.crimagev.image );
     }
 }
 

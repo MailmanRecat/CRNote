@@ -93,10 +93,12 @@
         [UIView animateWithDuration:0.25f
                               delay:0.0 options:(7 << 16)
                          animations:^{
-                             self.crimageview.transform = CGAffineTransformMakeScale(0.4, 0.4);
+                             self.crimageview.transform = CGAffineTransformMakeScale(0.3, 0.3);
                              self.crimageview.alpha = 0;
                          }completion:^(BOOL f){
-                             [[NSNotificationCenter defaultCenter] postNotificationName:CRPhotoPreviewDidDeleteNotification object:nil];
+                             if( self.photoDeletedHandler )
+                                 self.photoDeletedHandler();
+                             
                              [self dismissSelf];
                          }];
     }

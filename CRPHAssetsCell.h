@@ -14,8 +14,6 @@ static NSString *const CR_PH_ASSETS_CELL_ID = @"CR_PH_ASSETS_CELL_ID";
 
 @property( nonatomic, strong ) UIImageView *crimagev;
 @property( nonatomic, strong ) UILabel *dot;
-
-- (void)statusON;
-- (void)statusOFF;
+@property( nonatomic, assign ) BOOL checked;
 
 @end
