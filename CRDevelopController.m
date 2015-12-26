@@ -63,22 +63,23 @@
         
         CGFloat len = data.length / 1024 / 1024.0;
         
-        [path appendFormat:@"   %.2f MB \n ", len];
+        [path appendFormat:@"   %.3f MB \n ", len];
     }
     
     [path appendFormat:@"%ld \n ", counter];
     [path appendFormat:@"\n "];
     
+    NSString *thumS;
     counter = 0;
-    while( (once = [thum nextObject]) != nil ){
+    while( (thumS = [thum nextObject]) != nil ){
         counter++;
-        [path appendFormat:@"%@", once];
+        [path appendFormat:@"%@", thumS];
         
-        NSData *data = [[NSFileManager defaultManager] contentsAtPath:[NSString stringWithFormat:@"%@%@", basethum, once]];
+        NSData *data = [[NSFileManager defaultManager] contentsAtPath:[NSString stringWithFormat:@"%@%@", basethum, thumS]];
         
         CGFloat len = data.length / 1024 / 1024.0;
         
-        [path appendFormat:@"   %.2f MB \n ", len];
+        [path appendFormat:@"   %.3f MB \n ", len];
     }
     
     [path appendFormat:@"%ld \n ", counter];

@@ -18,11 +18,6 @@
 + (BOOL)updateNote:(CRNote *)note;
 + (BOOL)removeAllNote:(BOOL)remove;
 
-//+ (NSString *)pathFromPhotoname:(NSString *)name;
-//+ (NSString *)pathFromThumbnail:(NSString *)name;
-//+ (UIImage *)photoFromPhotoname:(NSString *)name;
-//+ (UIImage *)photoFromThumbnail:(NSString *)name;
-
 + (void)runTest;
 
 @end

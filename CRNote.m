@@ -60,16 +60,16 @@
         self.type = CRNoteTypeDefault;
 }
 
-- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail{
-    _imageData = imageData;
-    _thumbnailData = thumbnail;
-    
-    if( imageData && thumbnail )
-        self.type = CRNoteTypePhoto;
-    else{
-        self.type = CRNoteTypeDefault;
-    }
-}
+//- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail{
+//    _imageData = imageData;
+//    _thumbnailData = thumbnail;
+//    
+//    if( imageData && thumbnail )
+//        self.type = CRNoteTypePhoto;
+//    else{
+//        self.type = CRNoteTypeDefault;
+//    }
+//}
 
 + (NSString *)currentTimeString{
     NSString *(^formatStringFromNumber)(NSUInteger) = ^(NSUInteger n){
@@ -107,6 +107,7 @@
     NSLog(@"%@", note.editable);
     NSLog(@"%@", note.tag);
     NSLog(@"%@", note.type);
+    NSLog(@"%@", note.photoAsset);
 //    NSLog(@"%@", note.imageData);
     NSLog(@"crnote: %@ end log", note);
 }

@@ -26,6 +26,7 @@
 @property( nonatomic, assign ) CGSize  targetSize;
 @property( nonatomic, assign ) CGFloat heightOfCell;
 
+@property( nonatomic, assign ) BOOL canceled;
 @property( nonatomic, strong ) NSIndexPath *crindexPath;
 
 @end
@@ -91,24 +92,14 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated{
-//    if( self.PHPhotoHandler && self.crcell ){
-//        __block NSData *photo;
-//        [[PHImageManager defaultManager] requestImageDataForAsset:[self.PHResult objectAtIndex:self.crindexPath.row]
-//                                                          options:nil
-//                                                    resultHandler:
-//         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
-//             CGFloat size = imageData.length / 1024 / 1024.0;
-//             if( size > 2.6 ){
-//                 imageData = UIImageJPEGRepresentation([UIImage imageWithData:imageData], 2.6 / size);
-//             }
-//             photo = imageData;
-//             
-//             NSData *thumbnail = UIImageJPEGRepresentation(self.crcell.crimagev.image, 0.1);
-//             self.PHPhotoHandler(photo, thumbnail, NO);
-//         }];
-//    }
-    if( self.PHAssetHandler )
+    if( self.PHAssetHandler && self.canceled == NO )
         self.PHAssetHandler(self.PHResult[self.crindexPath.row]);
+}
+
+- (void)cancel{
+    self.canceled = YES;
+    if( self.PHAssetHandler )
+        self.PHAssetHandler(nil);
 }
 
 - (void)makeCancelButton{
@@ -127,11 +118,6 @@
     [self.view addSubview:self.cancelButton];
     [self.cancelButton.heightAnchor constraintEqualToConstant:52].active = YES;
     [CRLayout view:@[self.cancelButton, self.view] type:CREdgeLeft | CREdgeBottom | CREdgeRight];
-}
-
-- (void)cancel{
-    if( self.PHAssetHandler )
-        self.PHAssetHandler(nil);
 }
 
 - (void)makeCRBear{

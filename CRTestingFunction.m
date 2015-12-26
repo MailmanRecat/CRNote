@@ -18,7 +18,9 @@
     
     [CRNoteDatabase runTest];
     [CRPhotoManager runTest];
-    [CRNoteDatabase removeAllNote:YES];
+//    [CRNoteDatabase removeAllNote:YES];
+    
+    NSLog(@"path exists: %d", [[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/Documents/CRNotePhotos", NSHomeDirectory()]]);
     
     NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:[NSString stringWithFormat:@"%@/Documents/CRNotePhotos/", NSHomeDirectory()]];
     
@@ -26,6 +28,7 @@
     
     NSMutableString *mutableString = [[NSMutableString alloc] initWithFormat:@" \n "];
     NSString *path, *patc;
+    NSLog(@"saved photos %@ %@", enmu, enmi);
     while( (path = [enmu nextObject]) != nil || (patc = [enmi nextObject]) != nil ){
         NSLog(@"%@", path);
         NSLog(@"%@", patc);

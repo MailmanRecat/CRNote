@@ -6,6 +6,14 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
+#define CGSize_iphone4_X( s )  CGSizeMake(320 * s, 148 * s);
+#define CGSize_iphone5_X( s )  CGSizeMake(320 * s, 148 * s);
+#define CGSize_iphone6_X( s )  CGSizeMake(375 * s, 148 * s);
+#define CGSize_iphone6s_X( s ) CGSizeMake(414 * (s + 1), 148 * (s + 1));
+
+#define k_PREVIEW_PHOTO_SCREEN_SCALE 2
+#define k_PREVIEW_PHOTO_SCALE 0.6
+
 #import "CRPhotoManager.h"
 
 static NSString *const CR_APP_DOCUMENTS = @"Documents";
@@ -51,52 +59,107 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     return self;
 }
 
-+ (NSString *)pathFromPhotoname:(NSString *)name{
-    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_PHOTO_DIRECTORY, name];
-}
-
-+ (NSString *)pathFromThumbnail:(NSString *)name{
-    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_THUMBNAIL_DIRECTORY, name];
-}
-
 - (UIImage *)photoFromThumbnail:(NSString *)name{
-    UIImage *photo = [[CRPhotoManager defaultManager].photoCache objectForKey:name];
-    if( !photo ){
-        photo = [UIImage imageWithContentsOfFile:[CRPhotoManager pathFromPhotoname:name]];
-        [[CRPhotoManager defaultManager].photoCache setObject:photo forKey:name];
-    }
-    return photo;
-}
-
-- (UIImage *)photoFromPhotoname:(NSString *)name{
     UIImage *thumbnail = [[CRPhotoManager defaultManager].thumbnailCache objectForKey:name];
     if( !thumbnail ){
         thumbnail = [UIImage imageWithContentsOfFile:[CRPhotoManager pathFromThumbnail:name]];
-        [[CRPhotoManager defaultManager].thumbnailCache setObject:thumbnail forKey:name];
+        if( thumbnail ){
+            [[CRPhotoManager defaultManager].thumbnailCache setObject:thumbnail forKey:name];
+        }
     }
     return thumbnail;
 }
 
-+ (NSString *)savePhoto:(NSData *)photo thumbnail:(NSData *)thumbnail{
-    NSDictionary *info = [CRPhotoManager photoFileInfo];
-    if( [photo writeToFile:(NSString *)info[CR_PHOTO_PATH_KEY] atomically:YES] &&
-        [thumbnail writeToFile:(NSString *)info[CR_THUMBNAIL_PATH_KEY] atomically:YES] )
-    {
-        return (NSString *)info[CR_PHOTO_NAME_KEY];
+- (UIImage *)photoFromPhotoname:(NSString *)name{
+    UIImage *photo = [[CRPhotoManager defaultManager].photoCache objectForKey:name];
+    if( !photo ){
+        photo = [UIImage imageWithContentsOfFile:[CRPhotoManager pathFromPhotoname:name]];
+        if( photo ){
+            [[CRPhotoManager defaultManager].photoCache setObject:photo forKey:name];
+        }
     }
-    
-    return nil;
+    return photo;
+}
+
+- (BOOL)clearPhotoCache{
+    [[CRPhotoManager defaultManager].photoCache removeAllObjects];
+    return YES;
+}
+
+- (BOOL)clearThumbnailCache{
+    [[CRPhotoManager defaultManager].thumbnailCache removeAllObjects];
+    return YES;
+}
+
++ (BOOL)savePhoto:(NSData *)photo path:(NSString *)path{
+    return [photo writeToFile:path atomically:YES];
+}
+
++ (BOOL)saveThumbnail:(NSData *)thumbnail path:(NSString *)path{
+    return [thumbnail writeToFile:path atomically:YES];
 }
 
 + (NSString *)savePhoto:(PHAsset *)photoAsset{
-    NSDictionary *info = [CRPhotoManager photoFileInfo];
+    NSDictionary *ticket = [CRPhotoManager photoFileInfo];
     
+    [CRPhotoManager defaultManager].photoSaved = NO;
+    [CRPhotoManager defaultManager].thumbnailSaved = NO;
     
+    PHImageRequestOptions *PHO = [[PHImageRequestOptions alloc] init];
+    PHO.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    PHO.resizeMode = PHImageRequestOptionsResizeModeExact;
     
-    return (NSString *)info[CR_PHOTO_NAME_KEY];
+    CGSize targetSize;
+    CGFloat width = [UIScreen mainScreen].bounds.size.width;
+    if( width == 320 )
+        targetSize = CGSize_iphone4_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+    else if( width == 375 )
+        targetSize = CGSize_iphone6_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+    else if( width == 414 )
+        targetSize = CGSize_iphone6s_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+    else
+        targetSize = CGSize_iphone6_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+        
+    NSLog(@"target size %lf, %lf", targetSize.width, targetSize.height);
+    
+    [[PHImageManager defaultManager] requestImageDataForAsset:photoAsset
+                                                      options:nil
+                                                resultHandler:
+     ^(NSData *photo, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info){
+         CGFloat size = photo.length / 1024 / 1024.0;
+         if( size > 2.6 ){
+             photo = UIImageJPEGRepresentation([UIImage imageWithData:photo], 2.6 / size);
+         }
+         
+         if( [CRPhotoManager savePhoto:photo path:(NSString *)ticket[CR_PHOTO_PATH_KEY]] ){
+             [CRPhotoManager defaultManager].photoSaved = YES;
+         }
+         
+         if( [CRPhotoManager defaultManager].thumbnailSaved == YES ){
+             [[NSNotificationCenter defaultCenter] postNotificationName:CR_PHOTO_MANAGER_SAVE_RESULT_NOTIFICATION object:nil];
+         }
+         
+     }];
+
+    [[PHImageManager defaultManager] requestImageForAsset:photoAsset
+                                               targetSize:targetSize
+                                              contentMode:PHImageContentModeAspectFill
+                                                  options:PHO
+                                            resultHandler:
+     ^(UIImage *image, NSDictionary *info){
+         if( [CRPhotoManager saveThumbnail:UIImageJPEGRepresentation(image, k_PREVIEW_PHOTO_SCALE) path:(NSString *)ticket[CR_THUMBNAIL_PATH_KEY]] ){
+             [CRPhotoManager defaultManager].thumbnailSaved = YES;
+         }
+         
+         if( [CRPhotoManager defaultManager].photoSaved == YES ){
+             [[NSNotificationCenter defaultCenter] postNotificationName:CR_PHOTO_MANAGER_SAVE_RESULT_NOTIFICATION object:nil];
+         }
+     }];
+    
+    return (NSString *)ticket[CR_PHOTO_NAME_KEY];
 }
 
-+ (BOOL)deletePhotoFromName:(NSString *)name{
++ (BOOL)deletePhoto:(NSString *)name{
     NSString *photo = [NSString stringWithFormat:@"%@/%@", [CRPhotoManager pathFromDir:CR_NOTE_PHOTO_DIRECTORY], name];
     NSString *thumbnail = [NSString stringWithFormat:@"%@/%@", [CRPhotoManager pathFromDir:CR_NOTE_THUMBNAIL_DIRECTORY], name];
     BOOL isDir;
@@ -106,6 +169,9 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     
     if( [[NSFileManager defaultManager] fileExistsAtPath:thumbnail isDirectory:&isDir] && !isDir )
         thumbnailDelete = [[NSFileManager defaultManager] removeItemAtPath:thumbnail error:nil];
+    
+    [[CRPhotoManager defaultManager].photoCache removeObjectForKey:name];
+    [[CRPhotoManager defaultManager].thumbnailCache removeObjectForKey:name];
     
     return photoDelete && thumbnailDelete;
 }
@@ -128,8 +194,18 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     return YES;
 }
 
++ (NSString *)pathFromPhotoname:(NSString *)name{
+    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_PHOTO_DIRECTORY, name];
+}
+
++ (NSString *)pathFromThumbnail:(NSString *)name{
+    return [NSString stringWithFormat:@"%@/%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, CR_NOTE_THUMBNAIL_DIRECTORY, name];
+}
+
 + (NSDictionary *)photoFileInfo{
     return ({
+        [CRPhotoManager checkPhotoDir];
+        
         NSUInteger counter = ({
             NSUserDefaults *dfs = [NSUserDefaults standardUserDefaults];
             NSUInteger counter = [dfs integerForKey:CR_NOTE_DATABASE_FILE_REFERENCE_COUNTER];
@@ -152,7 +228,7 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     return [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, dir];
 }
 
-+ (BOOL)makeDirCheck{
++ (BOOL)checkPhotoDir{
     
     NSString *(^pathFromDir)(NSString *) = ^(NSString *dir){
         return [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), CR_APP_DOCUMENTS, dir];

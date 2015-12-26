@@ -22,6 +22,8 @@
 @property( nonatomic, strong ) CRNote *crnote;
 @property( nonatomic, assign ) BOOL isPreview;
 
+@property( nonatomic, strong ) void(^crnoteDeleteActionHandler)(NSString *action);
+
 - (instancetype)initFromCRNote:(CRNote *)note themeColor:(UIColor *)themeColor;
 
 - (void)parkSunset;

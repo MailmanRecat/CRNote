@@ -71,17 +71,16 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     UIPreviewAction *deleteAction = [UIPreviewAction actionWithTitle:@"Delete" style:UIPreviewActionStyleDestructive handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewController) {
         
-        if( self.previewActionHandler && [self.previewActionHandler respondsToSelector:@selector(notePreviewAction:fromController:)] ){
-            [self.previewActionHandler notePreviewAction:action.title fromController:previewController];
-        }
+        if( self.crnoteDeleteActionHandler )
+            self.crnoteDeleteActionHandler( action.title );
         
     }];
 
     UIPreviewAction *cancel = [UIPreviewAction actionWithTitle:@"Cancel" style:UIPreviewActionStyleDefault handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewController){
         
-        if( self.previewActionHandler && [self.previewActionHandler respondsToSelector:@selector(notePreviewAction:fromController:)] ){
-            [self.previewActionHandler notePreviewAction:action.title fromController:previewController];
-        }
+        if( self.crnoteDeleteActionHandler )
+            self.crnoteDeleteActionHandler( action.title );
+            
     }];
     
     UIPreviewActionGroup *delete = [UIPreviewActionGroup actionGroupWithTitle:@"Delete" style:UIPreviewActionStyleDestructive actions:@[ deleteAction, cancel ]];
@@ -121,7 +120,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.sun.duration = 0.6f;
     
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
-//        self.parkBear.image = [CRNoteDatabase photoFromPhotoname:self.crnote.imageName];
+        self.parkBear.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
     
     if( self.crnote.editable == CRNoteEditableNO )
         [self contentLock:YES];
@@ -617,12 +616,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)updateTitle{
-    if( [self.titleBoard.text isEqualToString:@""] || [self.titleBoard.text isEqualToString:CRNoteInvalilTitle] )
-        self.parkTitle.text = CRNoteInvalilTitle;
-    else
-        self.parkTitle.text = self.titleBoard.text;
-    
-    NSLog(@"update: %@", self.parkTitle.text);
+    if( [self.titleBoard.text isEqualToString:@""] || [self.titleBoard.text isEqualToString:CRNoteInvalilTitle] ){
+        self.parkTitle.text = self.crnote.title = CRNoteInvalilTitle;
+    }else{
+        self.parkTitle.text = self.crnote.title = self.titleBoard.text;
+    }
 }
 
 - (void)contentLock:(BOOL)lock{
@@ -764,6 +762,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         };
         
         picker.PHAssetHandler = ^(PHAsset *photoAsset){
+            NSLog(@"%@", photoAsset);
             if( photoAsset )
                 self.crnote.photoAsset = photoAsset;
             else{
@@ -798,19 +797,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)crnoteSave{
     
-    self.crnote.title = self.titleBoard.text;
     self.crnote.content = self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     
-    [CRNote logCRNote:self.crnote];
-    
     BOOL save;
-//    if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
-//        save = [CRNoteDatabase insertNote:self.crnote];
-//    else
-//        save = [CRNoteDatabase updateNote:self.crnote];
-    
-//    NSLog(@"save note %d", save);
+    if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
+        save = [CRNoteDatabase insertNote:self.crnote];
+    else
+        save = [CRNoteDatabase updateNote:self.crnote];
     
     [self dismissViewControllerAnimated:YES completion:nil];
 }
