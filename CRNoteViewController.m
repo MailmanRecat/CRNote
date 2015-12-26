@@ -31,6 +31,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 @property( nonatomic, strong ) UIView *peak;
 
+@property( nonatomic, strong ) UIButton *peakButtonDelete;
+@property( nonatomic, strong ) UIButton *peakButtonPaste;
 @property( nonatomic, strong ) UIButton *peakButtonCopy;
 @property( nonatomic, strong ) UIButton *peakButtonColor;
 @property( nonatomic, strong ) UIButton *peakButtonFont;
@@ -436,6 +438,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         peak;
     });
     
+    self.peakButtonDelete = makeButton([UIFont mdiDelete], 6);
     self.peakButtonCopy = makeButton([UIFont mdiContentCopy], 0);
     self.peakButtonLock = makeButton([UIFont mdiLockOpen], 1);
     self.peakButtonColor = makeButton([UIFont mdiPalette], 2);
@@ -467,7 +470,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     });
     
     __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
-    [@[ self.peakButtonCopy, self.peakButtonLock, self.peakButtonImage, self.peakButtonFont, self.peakButtonColor, self.peakButtonSave ]
+    [@[ self.peakButtonDelete, self.peakButtonLock, self.peakButtonImage, self.peakButtonFont, self.peakButtonColor, self.peakButtonSave ]
      enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
          obj.translatesAutoresizingMaskIntoConstraints = NO;
          [self.peak addSubview:obj];

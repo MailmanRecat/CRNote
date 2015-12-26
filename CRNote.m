@@ -6,6 +6,8 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
+#define k_CONTENT_PREVIEW_LEN 150
+
 #import "CRNote.h"
 #import "TimeTalkerBird.h"
 #import "UIColor+CRTheme.h"
@@ -20,6 +22,7 @@
                                                 CRNoteIDString: CRNoteInvalidID,
                                                 CRNoteTitleString: CRNoteInvalilTitle,
                                                 CRNoteContentString: CRNoteInvalilContent,
+                                                CRNoteContentPreviewString: CRNoteInvalidContentPreview,
                                                 CRNoteColorTypeString: CRThemeColorDefault,
                                                 CRNoteImageNameString: CRNoteInvalilImageName,
                                                 CRNoteTimeCreateString: timeString,
@@ -38,6 +41,7 @@
         self.noteID = dictionary[CRNoteIDString];
         self.title = dictionary[CRNoteTitleString];
         self.content = dictionary[CRNoteContentString];
+        self.contentPreview = dictionary[CRNoteContentPreviewString];
         self.colorType = dictionary[CRNoteColorTypeString];
         self.imageName = dictionary[CRNoteImageNameString];
         self.timeCreate = dictionary[CRNoteTimeCreateString];
@@ -51,6 +55,11 @@
     return self;
 }
 
+- (void)setContent:(NSString *)content{
+    _content = content;
+    _contentPreview = [content substringWithRange:NSMakeRange(0, content.length > k_CONTENT_PREVIEW_LEN ? k_CONTENT_PREVIEW_LEN : content.length)];
+}
+
 - (void)setPhotoAsset:(PHAsset *)photoAsset{
     _photoAsset = photoAsset;
     
@@ -59,17 +68,6 @@
     else
         self.type = CRNoteTypeDefault;
 }
-
-//- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail{
-//    _imageData = imageData;
-//    _thumbnailData = thumbnail;
-//    
-//    if( imageData && thumbnail )
-//        self.type = CRNoteTypePhoto;
-//    else{
-//        self.type = CRNoteTypeDefault;
-//    }
-//}
 
 + (NSString *)currentTimeString{
     NSString *(^formatStringFromNumber)(NSUInteger) = ^(NSUInteger n){
@@ -98,6 +96,7 @@
     NSLog(@"%@", note.noteID);
     NSLog(@"%@", note.title);
     NSLog(@"%@", note.content);
+    NSLog(@"%@", note.contentPreview);
     NSLog(@"%@", note.colorType);
     NSLog(@"%@", note.imageName);
     NSLog(@"%@", note.timeCreate);

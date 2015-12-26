@@ -20,6 +20,7 @@ static NSString *const CR_NOTE_DATABASE_KEY = @"CR_NOTE_DATABASE_KEY";
              note.noteID,
              note.title,
              note.content,
+             note.contentPreview,
              note.colorType,
              note.imageName,
              note.timeCreate,
@@ -33,20 +34,21 @@ static NSString *const CR_NOTE_DATABASE_KEY = @"CR_NOTE_DATABASE_KEY";
 }
 
 + (CRNote *)crnoteFromRow:(NSArray *)row{
-    if( [row count] != 12 ) return [CRNote defaultNote];
+    if( [row count] != 13 ) return [CRNote defaultNote];
     
     return [[CRNote alloc] initFromDictionary:@{
                                                 CRNoteIDString: row.firstObject,
                                                 CRNoteTitleString: row[1],
                                                 CRNoteContentString: row[2],
-                                                CRNoteColorTypeString: row[3],
-                                                CRNoteImageNameString: row[4],
-                                                CRNoteTimeCreateString: row[5],
-                                                CRNoteTimeUpdateString: row[6],
-                                                CRNoteFontnameString: row[7],
-                                                CRNoteFontsizeString: row[8],
-                                                CRNoteEditableString: row[9],
-                                                CRNoteTagString: row[10],
+                                                CRNoteContentPreviewString: row[3],
+                                                CRNoteColorTypeString: row[4],
+                                                CRNoteImageNameString: row[5],
+                                                CRNoteTimeCreateString: row[6],
+                                                CRNoteTimeUpdateString: row[7],
+                                                CRNoteFontnameString: row[8],
+                                                CRNoteFontsizeString: row[9],
+                                                CRNoteEditableString: row[10],
+                                                CRNoteTagString: row[11],
                                                 CRNoteTypeString: row.lastObject
                                                 }];
 }

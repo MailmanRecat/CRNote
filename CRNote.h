@@ -16,6 +16,7 @@ static NSString *const CRNoteEditableNO  = @"CR_NOTE_EDITABLE_NO";
 static NSString *const CRNoteInvalidID = @"CR_NOTE_INVALID_ID";
 static NSString *const CRNoteInvalilTitle = @"Untitled";
 static NSString *const CRNoteInvalilContent = @"Note";
+static NSString *const CRNoteInvalidContentPreview = @"Note";
 static NSString *const CRNoteInvalilImageName = @"NoImage";
 static NSString *const CRNoteInvalilTag = @"Tag";
 static NSString *const CRNoteTypeDefault = @"CR_NOTE_TYPE_DEFAULT";
@@ -26,6 +27,7 @@ static NSString *const CRNoteFontsizeDefault = @"21";
 static NSString *const CRNoteIDString = @"CR_NOTE_ID_STRING";
 static NSString *const CRNoteTitleString = @"CR_NOTE_TITLE_STRING";
 static NSString *const CRNoteContentString = @"CR_NOTE_CONTENT_STRING";
+static NSString *const CRNoteContentPreviewString = @"CR_NOTE_CONTENT_PREVIEW_STRING";
 static NSString *const CRNoteColorTypeString = @"CR_NOTE_COLOR_TYPE_STRING";
 static NSString *const CRNoteImageNameString = @"CR_NOTE_IMAGE_NAME_STRING";
 static NSString *const CRNoteTimeCreateString = @"CR_NOTE_TIME_CREATE_STRING";
@@ -41,6 +43,7 @@ static NSString *const CRNoteEditableString = @"CR_NOTE_EDITABLE_STRING";
 @property( nonatomic, strong ) NSString *noteID;
 @property( nonatomic, strong ) NSString *title;
 @property( nonatomic, strong ) NSString *content;
+@property( nonatomic, strong ) NSString *contentPreview;
 @property( nonatomic, strong ) NSString *colorType;
 @property( nonatomic, strong ) NSString *imageName;
 @property( nonatomic, strong ) NSString *timeCreate;
@@ -52,11 +55,6 @@ static NSString *const CRNoteEditableString = @"CR_NOTE_EDITABLE_STRING";
 @property( nonatomic, strong ) NSString *type;
 
 @property( nonatomic, strong ) PHAsset *photoAsset;
-
-@property( nonatomic, strong ) NSData *imageData;
-@property( nonatomic, strong ) NSData *thumbnailData;
-
-- (void)setImageData:(NSData *)imageData thumbnailData:(NSData *)thumbnail;
 
 + (instancetype)defaultNote;
 - (instancetype)initFromDictionary:(NSDictionary *)dictionary;

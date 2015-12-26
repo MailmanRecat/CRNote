@@ -42,7 +42,7 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
 @implementation CRPhotoManager
 
 + (instancetype)defaultManager{
-    static CRPhotoManager *photoManager = nil;
+    static CRPhotoManager *photoManager;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         photoManager = [[CRPhotoManager alloc] init];
