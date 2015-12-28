@@ -426,6 +426,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
         [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateHighlighted];
         [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
+        [button setBackgroundColor:[UIColor whiteColor]];
         [button addTarget:self action:@selector(peakAction:) forControlEvents:UIControlEventTouchUpInside];
         return button;
     };
@@ -440,10 +441,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.peakButtonDelete = makeButton([UIFont mdiDelete], 6);
     self.peakButtonCopy = makeButton([UIFont mdiContentCopy], 0);
+    self.peakButtonPaste = makeButton([UIFont mdiContentPaste], 7);
     self.peakButtonLock = makeButton([UIFont mdiLockOpen], 1);
     self.peakButtonColor = makeButton([UIFont mdiPalette], 2);
     self.peakButtonSave = makeButton([UIFont mdiPackageDown], 3);
-    self.peakButtonFont = makeButton([UIFont mdiFormatSize], 4);
+    self.peakButtonFont = makeButton([UIFont mdiParking], 4);
     self.peakButtonImage = makeButton([UIFont mdiFileImageBox], 5);
     
     UIButton *button;
@@ -470,7 +472,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     });
     
     __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
-    [@[ self.peakButtonDelete, self.peakButtonLock, self.peakButtonImage, self.peakButtonFont, self.peakButtonColor, self.peakButtonSave ]
+    [@[ self.peakButtonDelete, self.peakButtonLock, self.peakButtonFont, self.peakButtonImage, self.peakButtonColor, self.peakButtonSave ]
      enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
          obj.translatesAutoresizingMaskIntoConstraints = NO;
          [self.peak addSubview:obj];
@@ -482,6 +484,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
          anchor = obj.rightAnchor;
     }];
     
+    self.peakButtonCopy.translatesAutoresizingMaskIntoConstraints = NO;
+    self.peakButtonPaste.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.peak addSubview:self.peakButtonCopy];
+    [self.peak addSubview:self.peakButtonPaste];
     [self.peak addSubview:self.dismissKeyboard];
     [self.peak addSubview:self.peakButtonMessage];
     [self.view addSubview:self.peak];
@@ -492,8 +498,13 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
         
         [button.heightAnchor constraintEqualToConstant:52].active = YES;
-        [button.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
-        [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
+        if( index == 0 ){
+            [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
+            [button.rightAnchor constraintEqualToAnchor:self.peak.rightAnchor].active = YES;
+        }else{
+            [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
+            [button.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
+        }
         if( index == 0 ){
             self.dismissKeyboarGuide = [button.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
             self.dismissKeyboarGuide.active = YES;
@@ -501,6 +512,16 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
             [button.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
         }
     }];
+    
+    [self.peakButtonCopy.topAnchor constraintEqualToAnchor:self.dismissKeyboard.topAnchor].active = YES;
+    [self.peakButtonCopy.leftAnchor constraintEqualToAnchor:self.peak.leftAnchor].active = YES;
+    [self.peakButtonCopy.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
+    [self.peakButtonCopy.bottomAnchor constraintEqualToAnchor:self.dismissKeyboard.bottomAnchor].active = YES;
+    
+    [self.peakButtonPaste.topAnchor constraintEqualToAnchor:self.dismissKeyboard.topAnchor].active = YES;
+    [self.peakButtonPaste.leftAnchor constraintEqualToAnchor:self.peakButtonCopy.rightAnchor].active = YES;
+    [self.peakButtonPaste.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
+    [self.peakButtonPaste.bottomAnchor constraintEqualToAnchor:self.dismissKeyboard.bottomAnchor].active = YES;
     
     self.peakGuide = [self.peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:52];
     self.peakGuide.active = YES;
