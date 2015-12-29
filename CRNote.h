@@ -22,7 +22,7 @@ static NSString *const CRNoteInvalilTag = @"Tag";
 static NSString *const CRNoteTypeDefault = @"CR_NOTE_TYPE_DEFAULT";
 static NSString *const CRNoteTypePhoto   = @"CR_NOTE_TYPE_PHOTO";
 static NSString *const CRNoteFontnameDefault = @"Roboto-Regular";
-static NSString *const CRNoteFontsizeDefault = @"21";
+static NSString *const CRNoteFontsizeDefault = @"16";
 
 static NSString *const CRNoteIDString = @"CR_NOTE_ID_STRING";
 static NSString *const CRNoteTitleString = @"CR_NOTE_TITLE_STRING";

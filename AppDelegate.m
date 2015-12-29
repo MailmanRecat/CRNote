@@ -15,11 +15,24 @@
 
 @implementation AppDelegate
 
+- (void)letShortcutAction{
+    UIApplicationShortcutItem *add = [[UIApplicationShortcutItem alloc] initWithType:@"add"
+                                                                      localizedTitle:@"New Note"
+                                                                   localizedSubtitle:nil
+                                                                                icon:[UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypeAdd]
+                                                                            userInfo:@{
+                                                                                       @"info": @"com.mailman.crnote"
+                                                                                       }];
+    
+    [UIApplication sharedApplication].shortcutItems = @[ add ];
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
     [CRTestingFunction runTest];
+    
+    [self letShortcutAction];
     
     return YES;
 }

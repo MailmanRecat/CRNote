@@ -6,8 +6,7 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#define CR_PEAK_HEIGHT 52.0f
-#define CR_USER_LIBRARY_DENEY @"Library access denied, tap to setting."
+#define CR_USER_LIBRARY_DENEY @"library access denied, tap to setting."
 
 #import "CRNoteDatabase.h"
 #import "CRNoteViewController.h"
@@ -17,33 +16,26 @@
 #import "CRPhotoPreviewController.h"
 #import "CRPHAssetsController.h"
 
+#import "CRPark.h"
+#import "CRPeak.h"
+
 static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library access denied, tap to setting.";
 
 @interface CRNoteViewController()<UITextFieldDelegate, UITextViewDelegate, UIScrollViewDelegate>
 
 @property( nonatomic, strong ) GGAnimationSunrise *sun;
 
-@property( nonatomic, strong ) UIView *parkGround;
-@property( nonatomic, strong ) UIImageView *parkBear;
-@property( nonatomic, strong ) UILabel *parkTitle;
-@property( nonatomic, strong ) NSLayoutConstraint *parkGuide;
-@property( nonatomic, strong ) UIImage *bearCache;
+@property( nonatomic, assign ) BOOL noteEditable;
 
-@property( nonatomic, strong ) UIView *peak;
+@property( nonatomic, strong ) CRPark *yosemite;
+@property( nonatomic, strong ) NSLayoutConstraint *yosemiteLayoutGuide;
+@property( nonatomic, assign ) CGFloat yosemiteLayoutConstant;
+@property( nonatomic, strong ) UIButton *floatingBtn;
+@property( nonatomic, assign ) BOOL floatingHidden;
 
-@property( nonatomic, strong ) UIButton *peakButtonDelete;
-@property( nonatomic, strong ) UIButton *peakButtonPaste;
-@property( nonatomic, strong ) UIButton *peakButtonCopy;
-@property( nonatomic, strong ) UIButton *peakButtonColor;
-@property( nonatomic, strong ) UIButton *peakButtonFont;
-@property( nonatomic, strong ) UIButton *peakButtonLock;
-@property( nonatomic, strong ) UIButton *peakButtonImage;
-@property( nonatomic, strong ) UIButton *peakButtonSave;
-@property( nonatomic, strong ) UIButton *peakButtonMessage;
+@property( nonatomic, strong ) CRPeak *peak;
+@property( nonatomic, strong ) NSLayoutConstraint *peakLayoutGuide;
 
-@property( nonatomic, strong ) NSLayoutConstraint *peakGuide;
-@property( nonatomic, strong ) UIButton *dismissKeyboard;
-@property( nonatomic, strong ) NSLayoutConstraint *dismissKeyboarGuide;
 
 @property( nonatomic, strong ) UIButton *floatingActionCheck;
 
@@ -67,6 +59,42 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         self.themeColor = themeColor;
     }
     return self;
+}
+
+- (void)setNoteEditable:(BOOL)noteEditable{
+    _noteEditable = noteEditable;
+    
+    self.titleBoard.enabled = noteEditable;
+    self.textBoard.editable = noteEditable;
+    
+    if( noteEditable ){
+        self.crnote.editable = CRNoteEditableYes;
+        [self.peak.lock setTitle:[UIFont mdiLockOpen] forState:UIControlStateNormal];
+    }else{
+        self.crnote.editable = CRNoteEditableNO;
+        [self.peak.lock setTitle:[UIFont mdiLock] forState:UIControlStateNormal];
+    }
+}
+
+- (void)setFloatingHidden:(BOOL)floatingHidden{
+    if( _floatingHidden == floatingHidden ) return;
+    _floatingHidden = floatingHidden;
+    
+    if( _floatingHidden ){
+        self.floatingBtn.alpha = 0;
+        self.floatingBtn.transform = CGAffineTransformMakeScale(0.3, 0.3);
+    }else{
+        self.floatingBtn.hidden = NO;
+        self.floatingBtn.transform = CGAffineTransformMakeScale(1, 1);
+        self.floatingBtn.alpha = 1;
+    }
+}
+
+- (void)setYosemiteLayoutConstant:(CGFloat)yosemiteLayoutConstant{
+    self.yosemiteLayoutGuide.constant = yosemiteLayoutConstant;
+    self.yosemite.nameplateOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
+    
+    [self.yosemite layoutIfNeeded];
 }
 
 -(NSArray<id<UIPreviewActionItem>> *)previewActionItems {
@@ -102,42 +130,35 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [super viewDidLoad];
     
     [self viewThenLoad];
-    [self makeTextBoard];
-    [self makePark];
-    [self makePeak];
+    [self letTextBoard];
+//    [self makePark];
+//    [self makePeak];
+    [self letPark];
+    [self letPeak];
     
     [self addNotificationObserver];
     [self viewLastLoad];
 }
 
 - (void)viewLastLoad{
-    [self.floatingActionCheck.topAnchor constraintEqualToAnchor:self.park.bottomAnchor constant:-28].active = YES;
-    [self.textBoard.topAnchor constraintEqualToAnchor:self.park.bottomAnchor].active = YES;
-    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor constant:-CR_PEAK_HEIGHT].active = YES;
-    self.sun = [[GGAnimationSunrise alloc] initWithType:GGAnimationSunriseTypeConcurrent blockOnCompletion:^(GGAnimationSunriseType type){
-        UIColor *color = self.colorQueue.firstObject;
-        [self.colorQueue removeObjectAtIndex:0];
-        self.park.backgroundColor = color;
-    }];
-    self.sun.duration = 0.6f;
+    
+    [self.textBoard.topAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor].active = YES;
+    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
     
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
-        self.parkBear.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
+        self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
     
-    if( self.crnote.editable == CRNoteEditableNO )
-        [self contentLock:YES];
+    if( self.crnote.editable == CRNoteEditableYes )
+        self.noteEditable = YES;
+    else
+        self.noteEditable = NO;
     
-    self.textBoard.font = self.titleBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
-    
-    if( [self.crnote.content isEqualToString:CRNoteInvalilContent] )
-        [self.peakButtonCopy setTitle:[UIFont mdiContentPaste] forState:UIControlStateNormal];
-    
-    self.parkTitle.text = self.crnote.title;
+    self.textBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
         self.titleBoard.text = self.crnote.title;
     
-    self.textBoard.text = self.crnote.content;
+//    self.textBoard.text = self.crnote.content;
     self.textBoard.tintColor = self.themeColor;
     
     self.textBoard.textColor =
@@ -168,21 +189,19 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 - (void)willKeyBoardChangeFrame:(NSNotification *)keyboardInfo{
     NSDictionary *info = [keyboardInfo userInfo];
     CGFloat constant = self.view.frame.size.height - [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
-    CGFloat duration = [info[UIKeyboardAnimationDurationUserInfoKey] floatValue];
-    UIViewAnimationOptions option = [info[UIKeyboardAnimationCurveUserInfoKey] integerValue];
     
-    if( constant != 0 )
-        self.dismissKeyboarGuide.constant = 0.0f;
+    self.peakLayoutGuide.constant = -constant > 0 ? 0 : -constant;
+    
+    if( self.peakLayoutGuide.constant == 0 )
+        self.peak.enbleSubbtn = NO;
     else
-        self.dismissKeyboarGuide.constant = CR_PEAK_HEIGHT;
+        self.peak.enbleSubbtn = YES;
     
-    self.peakGuide.constant = -constant > 0 ? 0 : -constant + CR_PEAK_HEIGHT;
-    
-    [UIView animateWithDuration:duration
+    [UIView animateWithDuration:[info[UIKeyboardAnimationDurationUserInfoKey] floatValue]
                           delay:0.0f
-                        options:option
+                        options:[info[UIKeyboardAnimationCurveUserInfoKey] integerValue]
                      animations:^{
-                         [self.view layoutIfNeeded];
+                         [self.peak layoutIfNeeded];
                      }
                      completion:nil];
 }
@@ -202,13 +221,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         frame;
     });
     
-    BOOL shouldLayoutPark = NO;
-    if( self.parkGuide.constant != 0 ){
-        self.parkGuide.constant = 0;
-        shouldLayoutPark = YES;
-    }
-    
-    [self peakLayout:YES autoLayout:NO];
+    self.yosemiteLayoutConstant = 0;
+    self.peakLayoutGuide.constant = CR_PEAK_HEIGHT;
     
     self.floatingActionCheck.enabled = YES;
     self.floatingActionCheck.hidden = NO;
@@ -220,11 +234,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          self.floatingActionCheck.transform = CGAffineTransformMakeScale(1, 1);
                          viewController.view.frame = self.view.frame;
                          
-                         if( shouldLayoutPark ){
-                             [self.park layoutIfNeeded];
-                             [self adjustSunlight];
-                         }
-                         
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
                          self.textBoard.hidden = YES;
@@ -235,8 +244,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.canAdjust = YES;
     [self parkSunrise];
     UIViewController *target = self.childViewControllers.firstObject;
-    [self peakLayout:NO autoLayout:NO];
     self.textBoard.hidden = NO;
+    self.peakLayoutGuide.constant = 0;
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
@@ -248,6 +257,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                              frame.origin.y = frame.size.height;
                              frame;
                          });
+                         
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
                          self.floatingActionCheck.enabled = NO;
@@ -263,16 +273,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.themeColorString = self.crnote.colorType = string;
     self.textBoard.tintColor = self.themeColor = color;
     [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
-    
-    if( self.bearCache == nil ){
-        if( !self.colorQueue ) self.colorQueue = [NSMutableArray new];
-        
-        [self.colorQueue addObject:color];
-        [self.sun sunriseAtLand:self.parkGround
-                       location:CGPointMake(self.view.frame.size.width / 2, (STATUS_BAR_HEIGHT + 128) / 2)
-                     lightColor:color];
-    }else
-        self.park.backgroundColor = color;
 }
 
 - (void)updateNoteFont:(NSString *)name size:(NSUInteger)size{
@@ -281,16 +281,15 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
 }
 
-- (void)makeCopy{
+- (void)letCopy{
     [UIPasteboard generalPasteboard].string = self.textBoard.text;
-    [self peakMessage:@"Content copied"];
+    self.peak.notification = @"content copied, tap to disappear.";
 }
 
-- (void)makePaste{
+- (void)letPaste{
     self.textBoard.text = [UIPasteboard generalPasteboard].string;
-    [self.peakButtonCopy setTitle:[UIFont mdiContentCopy] forState:UIControlStateNormal];
-    [self.textBoard setTextColor:[UIColor colorWithWhite:17 / 255.0 alpha:1]];
-    [self peakMessage:@"Content Pasted"];
+    self.textBoard.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
+    self.peak.notification = @"content pasted, tap to disappear.";
 }
 
 - (void)parkSunset{
@@ -301,304 +300,116 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.park.layer.shadowOpacity = 0;
 }
 
-- (void)adjustSunlight{
-    CGFloat labelAlpha = (fabs(self.parkGuide.constant) / 128.0);
-    
-    self.parkTitle.alpha = 1 - labelAlpha;
-    self.park.layer.shadowOpacity = labelAlpha * 0.27;
-}
-
 - (void)foldPark:(BOOL)fold{
-    if( fold )
-        [self foldParkDistants:-128];
-    else
-        [self foldParkDistants:0];
+//    if( fold )
+//        [self foldParkDistants:-128];
+//    else
+//        [self foldParkDistants:0];
 }
 
-- (void)foldParkDistants:(CGFloat)distants{
-    self.parkGuide.constant = distants;
+//- (void)foldParkDistants:(CGFloat)distants{
+//    self.parkGuide.constant = distants;
+//    
+//    CGFloat alpha = 1 - (fabs(distants) / 128.0);
+//    
+//    if( distants == -128 )
+//        [self parkSunset];
+//    else
+//        [self parkSunrise];
+//    
+//    [UIView animateWithDuration:0.25f
+//                          delay:0.0f options:(7 << 16)
+//                     animations:^{
+//                         
+//                         self.parkTitle.alpha = alpha;
+//                         [self.view layoutIfNeeded];
+//                         
+//                     }completion:nil];
+//}
+
+- (void)letPark{
+    self.yosemite = ({
+        CRPark *yose = [[CRPark alloc] initFromColor:self.themeColor];
+        [yose setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [self.view addSubview:yose];
+        [yose.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+        [yose.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+        [yose.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 128.0f].active = YES;
+        self.yosemiteLayoutGuide = [yose.topAnchor constraintEqualToAnchor:self.view.topAnchor];
+        self.yosemiteLayoutGuide.active = YES;
+        self.yosemiteLayoutConstant = 0;
+        yose;
+    });
     
-    CGFloat alpha = 1 - (fabs(distants) / 128.0);
+    self.floatingBtn = ({
+        UIButton *floating = [[UIButton alloc] init];
+        floating.translatesAutoresizingMaskIntoConstraints = NO;
+        floating.backgroundColor = [UIColor whiteColor];
+        floating.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
+        [self.view addSubview:floating];
+        [floating.rightAnchor constraintEqualToAnchor:self.yosemite.rightAnchor constant:-16].active = YES;
+        [floating.bottomAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor constant:28].active = YES;
+        [floating.heightAnchor constraintEqualToAnchor:floating.widthAnchor].active = YES;
+        [floating.widthAnchor constraintEqualToConstant:56.0f].active = YES;
+        [floating makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
+        [floating setTitle:[UIFont mdiCheck] forState:UIControlStateNormal];
+        [floating setTitleColor:self.themeColor forState:UIControlStateNormal];
+        [floating addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
+        floating;
+    });
     
-    if( distants == -128 )
-        [self parkSunset];
-    else
-        [self parkSunrise];
+    self.yosemite.nameplate.text = @"ld install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single ";
+    [self.yosemite.dismissBtn addTarget:self action:@selector(dismissSelf) forControlEvents:UIControlEventTouchUpInside];
     
-    [UIView animateWithDuration:0.25f
-                          delay:0.0f options:(7 << 16)
-                     animations:^{
-                         
-                         self.parkTitle.alpha = alpha;
-                         [self.view layoutIfNeeded];
-                         
-                     }completion:nil];
+    self.floatingBtn.hidden = YES;
+//    self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
 }
 
-- (void)makePark{
-    self.park = ({
-        UIView *park = [[UIView alloc] init];
-        park.translatesAutoresizingMaskIntoConstraints = NO;
-        park.backgroundColor = self.themeColor;
-        [park makeShadowWithSize:CGSizeMake(0, 1) opacity:0.0 radius:1.7];
-        park;
-    });
-    
-    self.parkTitle = ({
-        UILabel *title = [[UILabel alloc] init];
-        title.translatesAutoresizingMaskIntoConstraints = NO;
-        title.backgroundColor = [UIColor clearColor];
-        title.textColor = [UIColor whiteColor];
-        title.font = [CRNoteApp appFontOfSize:37 weight:UIFontWeightRegular];
-        title.adjustsFontSizeToFitWidth = YES;
-        title.numberOfLines = 0;
-        title.text = CRNoteInvalilTitle;
-        title;
-    });
-    
-    self.parkBear = ({
-        UIImageView *iv = [[UIImageView alloc] init];
-        iv.translatesAutoresizingMaskIntoConstraints = NO;
-        iv.contentMode = UIViewContentModeScaleAspectFill;
-        iv.clipsToBounds = YES;
-        iv;
-    });
-    
-    self.parkGround = ({
-        UIView *ground = [[UIView alloc] init];
-        ground.translatesAutoresizingMaskIntoConstraints = NO;
-        ground;
-    });
-    
-    UIButton *button;
-    self.dismissButton = ({
-        button = [[UIButton alloc] initWithFrame:CGRectMake(0, STATUS_BAR_HEIGHT, 56, 56)];
-        button.titleLabel.font = [UIFont MaterialDesignIcons];
-        [button setTitleColor:[UIColor colorWithWhite:255 / 255.0 alpha:1] forState:UIControlStateNormal];
-        [button setTitle:[UIFont mdiArrowLeft] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(dismissSelf) forControlEvents:UIControlEventTouchUpInside];
-        button;
-    });
-    
-    self.floatingActionCheck = ({
-        button = [[UIButton alloc] init];
-        button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.layer.cornerRadius = 56 / 2.0f;
-        button.backgroundColor = [UIColor whiteColor];
-        button.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
-        [button makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
-        [button setTitleColor:self.themeColor forState:UIControlStateNormal];
-        [button setTitle:[UIFont mdiCheck] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
-        button;
-    });
-    
-    self.floatingActionCheck.hidden = YES;
-    
-    [self.park addAutolayoutSubviews:@[ self.parkGround, self.parkBear, self.parkTitle ]];
-    [self.park addSubview:self.dismissButton];
-    [self.view addSubview:self.park];
-    [self.view addSubview:self.floatingActionCheck];
-    
-    [CRLayout view:@[ self.parkBear, self.park ] type:CREdgeAround];
-    [CRLayout view:@[ self.parkGround, self.park ] type:CREdgeAround];
-    [CRLayout view:@[ self.parkTitle, self.park ] type:CREdgeRight | CREdgeBottom | CREdgeLeft edge:UIEdgeInsetsMake(0, 64, -8, -24)];
-    [self.parkTitle.heightAnchor constraintGreaterThanOrEqualToConstant:72].active = YES;
-    [self.parkTitle.heightAnchor constraintLessThanOrEqualToConstant:56 + 72 - 16].active = YES;
-    
-    [self.floatingActionCheck.rightAnchor constraintEqualToAnchor:self.view.rightAnchor constant:-16].active = YES;
-    [self.floatingActionCheck.heightAnchor constraintEqualToConstant:56].active = YES;
-    [self.floatingActionCheck.widthAnchor constraintEqualToConstant:56].active = YES;
-    
-    [CRLayout view:@[ self.park, self.view ] type:CREdgeLeft | CREdgeRight];
-    [self.park.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 56 + 72].active = YES;
-    self.parkGuide = [self.park.topAnchor constraintEqualToAnchor:self.view.topAnchor];
-    self.parkGuide.active = YES;
-}
-
-- (void)makePeak{
-    UIButton *(^makeButton)(NSString *, NSUInteger) = ^(NSString *title, NSUInteger tag){
-        UIButton *button = [[UIButton alloc] init];
-        button.tag = 1000 + tag;
-        button.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
-        button.backgroundColor = [UIColor clearColor];
-        [button setTitle:title forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
-        [button setBackgroundColor:[UIColor whiteColor]];
-        [button addTarget:self action:@selector(peakAction:) forControlEvents:UIControlEventTouchUpInside];
-        return button;
-    };
-    
+- (void)letPeak{
     self.peak = ({
-        UIView *peak = [[UIView alloc] init];
-        peak.translatesAutoresizingMaskIntoConstraints = NO;
-        peak.backgroundColor = [UIColor whiteColor];
+        CRPeak *peak = [[CRPeak alloc] init];
+        [peak setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [self.view addSubview:peak];
         [peak makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
+        [peak.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+        [peak.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+        self.peakLayoutGuide = [peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+        self.peakLayoutGuide.active = YES;
         peak;
     });
     
-    self.peakButtonDelete = makeButton([UIFont mdiDelete], 6);
-    self.peakButtonCopy = makeButton([UIFont mdiContentCopy], 0);
-    self.peakButtonPaste = makeButton([UIFont mdiContentPaste], 7);
-    self.peakButtonLock = makeButton([UIFont mdiLockOpen], 1);
-    self.peakButtonColor = makeButton([UIFont mdiPalette], 2);
-    self.peakButtonSave = makeButton([UIFont mdiPackageDown], 3);
-    self.peakButtonFont = makeButton([UIFont mdiParking], 4);
-    self.peakButtonImage = makeButton([UIFont mdiFileImageBox], 5);
-    
-    UIButton *button;
-    self.dismissKeyboard = ({
-        button = [[UIButton alloc] init];
-        button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
-        button.backgroundColor = [UIColor whiteColor];
-        [button setTitle:[UIFont mdiKeyboardClose] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(viewEndEdit) forControlEvents:UIControlEventTouchUpInside];
-        button;
-    });
-    self.peakButtonMessage = ({
-        button = [[UIButton alloc] init];
-        button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.titleLabel.font = [CRNoteApp appFontOfSize:17 weight:UIFontWeightMedium];
-        button.backgroundColor = [UIColor colorWithWhite:50 / 255.0 alpha:1];
-        button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-        button.contentEdgeInsets = UIEdgeInsetsMake(0, 16, 0, -16);
-        [button setTitleColor:[UIColor colorWithWhite:237 / 255.0 alpha:1] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(peakMessageDisappear) forControlEvents:UIControlEventTouchUpInside];
-        button;
-    });
-    
-    __block NSLayoutAnchor *anchor = self.peak.leftAnchor;
-    [@[ self.peakButtonDelete, self.peakButtonLock, self.peakButtonFont, self.peakButtonImage, self.peakButtonColor, self.peakButtonSave ]
-     enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
-         obj.translatesAutoresizingMaskIntoConstraints = NO;
-         [self.peak addSubview:obj];
-         
-         [obj.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor multiplier:0.5].active = YES;
-         [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:( 1 / 6.0 )].active = YES;
-         [obj.topAnchor constraintEqualToAnchor:self.peak.topAnchor].active = YES;
-         [obj.leftAnchor constraintEqualToAnchor:anchor].active = YES;
-         anchor = obj.rightAnchor;
+    [[self.peak btns] enumerateObjectsUsingBlock:^(UIButton *btn, NSUInteger index, BOOL *sS){
+        [btn addTarget:self action:@selector(letPeakAction:) forControlEvents:UIControlEventTouchUpInside];
     }];
+}
+
+- (void)letPeakAction:(UIButton *)btn{
+    NSInteger tag = btn.tag - CR_PEAK_BUTTON_BASIC_TAG;
     
-    self.peakButtonCopy.translatesAutoresizingMaskIntoConstraints = NO;
-    self.peakButtonPaste.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.peak addSubview:self.peakButtonCopy];
-    [self.peak addSubview:self.peakButtonPaste];
-    [self.peak addSubview:self.dismissKeyboard];
-    [self.peak addSubview:self.peakButtonMessage];
-    [self.view addSubview:self.peak];
-    
-    [@[ self.dismissKeyboard, self.peakButtonMessage ] enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger index, BOOL *sS){
+    if( tag == 0 ){
         
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:0.7] forState:UIControlStateDisabled];
+    }else if( tag == 1 ){
+        self.noteEditable = !self.noteEditable;
+    }else if( tag == 2 ){
+        [self fontPick];
+    }else if( tag == 3 ){
+        self.crnote.type == CRNoteTypePhoto ? [self photoPreview] : [self photoPick];
+    }else if( tag == 4 ){
+        [self colorPick];
+    }else if( tag == 5 ){
         
-        [button.heightAnchor constraintEqualToConstant:52].active = YES;
-        if( index == 0 ){
-            [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
-            [button.rightAnchor constraintEqualToAnchor:self.peak.rightAnchor].active = YES;
-        }else{
-            [button.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor].active = YES;
-            [button.centerXAnchor constraintEqualToAnchor:self.peak.centerXAnchor].active = YES;
-        }
-        if( index == 0 ){
-            self.dismissKeyboarGuide = [button.topAnchor constraintEqualToAnchor:self.peak.topAnchor constant:52];
-            self.dismissKeyboarGuide.active = YES;
-        }else{
-            [button.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
-        }
-    }];
-    
-    [self.peakButtonCopy.topAnchor constraintEqualToAnchor:self.dismissKeyboard.topAnchor].active = YES;
-    [self.peakButtonCopy.leftAnchor constraintEqualToAnchor:self.peak.leftAnchor].active = YES;
-    [self.peakButtonCopy.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
-    [self.peakButtonCopy.bottomAnchor constraintEqualToAnchor:self.dismissKeyboard.bottomAnchor].active = YES;
-    
-    [self.peakButtonPaste.topAnchor constraintEqualToAnchor:self.dismissKeyboard.topAnchor].active = YES;
-    [self.peakButtonPaste.leftAnchor constraintEqualToAnchor:self.peakButtonCopy.rightAnchor].active = YES;
-    [self.peakButtonPaste.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:1 / 3.0].active = YES;
-    [self.peakButtonPaste.bottomAnchor constraintEqualToAnchor:self.dismissKeyboard.bottomAnchor].active = YES;
-    
-    self.peakGuide = [self.peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:52];
-    self.peakGuide.active = YES;
-    [self.peak.heightAnchor constraintEqualToConstant:104].active = YES;
-    [CRLayout view:@[ self.peak, self.view ] type:CREdgeLeft | CREdgeRight];
-}
-
-- (void)peakLayout:(BOOL)hide autoLayout:(BOOL)layout{
-    if( hide )
-        self.peakGuide.constant = CR_PEAK_HEIGHT * 2;
-    else
-        self.peakGuide.constant = CR_PEAK_HEIGHT;
-    
-    if( layout )
-        [UIView animateWithDuration:0.25f
-                              delay:0.0f options:(7 << 16)
-                         animations:^{
-                             [self.peak layoutIfNeeded];
-                         }completion:nil];
-}
-
-- (void)peakMessage:(NSString *)message{
-    [self.peakButtonMessage setTitle:message forState:UIControlStateNormal];
-    
-    self.peakGuide.constant = 0;
-    [UIView animateWithDuration:0.25f
-                          delay:0.0f options:(7 << 16)
-                     animations:^{
-                         [self.peak layoutIfNeeded];
-                     }completion:nil];
-}
-
-- (void)peakMessageDisappear{
-    if( [self.peakButtonMessage.titleLabel.text isEqualToString:PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING] ){
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-        return;
-    }
-    [self peakLayout:NO autoLayout:YES];
-}
-
-- (void)peakAction:(UIButton *)sender{
-    NSUInteger tag = sender.tag - 1000;
-    
-    switch( tag ){
-        case 0:
-            if( [self.peakButtonCopy.titleLabel.text isEqualToString:[UIFont mdiContentCopy]] )
-                [self makeCopy];
-            else
-                [self makePaste];
-        break;
-        case 1:
-            if( self.crnote.editable == CRNoteEditableYes ){
-                [self contentLock:YES];
-                [self peakMessage:@"Note Locked"];
-            }else{
-                [self contentLock:NO];
-                [self peakMessage:@"Note Unlocked"];
-            }
-            break;
-        case 2:
-            [self colorPick];
-            break;
-        case 3:
-            [self crnoteSave];
-        break;
-        case 4:
-            [self fontPick];
-        break;
-        case 5:
-            [self.crnote.type isEqualToString:CRNoteTypePhoto] ? [self photoPreview] : [self photoPick];
-        break;
-        default:
-            break;
+    }else if( tag == 6 ){
+        [self letPaste];
+    }else if( tag == 7 ){
+        [self letCopy];
+    }else if( tag == 8 ){
+        [self.view endEditing:YES];
+    }else if( tag == 9 ){
+        self.peak.notification = nil;
     }
 }
 
-- (void)makeTextBoard{
+- (void)letTextBoard{
     self.textBoard = ({
         UITextView *board = [[UITextView alloc] init];
         board.translatesAutoresizingMaskIntoConstraints = NO;
@@ -615,7 +426,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.lastPointMark = 0;
     
-//    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
+    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
     
     self.titleBoard = ({
         UITextField *board = [[UITextField alloc] init];
@@ -640,34 +451,22 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)updateTitle{
-    if( [self.titleBoard.text isEqualToString:@""] || [self.titleBoard.text isEqualToString:CRNoteInvalilTitle] ){
-        self.parkTitle.text = self.crnote.title = CRNoteInvalilTitle;
-    }else{
-        self.parkTitle.text = self.crnote.title = self.titleBoard.text;
-    }
-}
-
-- (void)contentLock:(BOOL)lock{
-    self.textBoard.editable = !lock;
-    self.titleBoard.enabled = !lock;
-    self.crnote.editable = lock ? CRNoteEditableNO : CRNoteEditableYes;
-    
-    if( lock )
-        [self.peakButtonLock setTitle:[UIFont mdiLock] forState:UIControlStateNormal];
+    if( [self.titleBoard.text isEqualToString:@""] || [self.titleBoard.text isEqualToString:CRNoteInvalilTitle] )
+        self.yosemite.nameplate.text = CRNoteInvalilTitle;
     else
-        [self.peakButtonLock setTitle:[UIFont mdiLockOpen] forState:UIControlStateNormal];
+        self.yosemite.nameplate.text = self.titleBoard.text;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
-    if( self.peakGuide.constant == 0 )
-        [self peakLayout:NO autoLayout:YES];
+//    if( self.peakGuide.constant == 0 )
+//        [self peakLayout:NO autoLayout:YES];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
     CGFloat pointY = scrollView.contentOffset.y;
     
     BOOL shouldLayout = NO, isScrollUp = NO;
-    CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.parkGuide.constant);
+    CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.yosemiteLayoutConstant);
     CGFloat distants = pointY - self.lastPointMark;
     
     if( self.lastPointMark < pointY )
@@ -686,19 +485,13 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)scrollviewDidScrollDown:(CGFloat)distants{
-    if( self.parkGuide.constant == 0 ) return;
-    
-    self.parkGuide.constant = self.parkGuide.constant + distants > 0 ? 0 : self.parkGuide.constant + distants;
-    [self adjustSunlight];
-    [self.park layoutIfNeeded];
+    if( self.yosemiteLayoutConstant == 0 ) return;
+    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant + distants > 0 ? 0 : self.yosemiteLayoutConstant + distants;
 }
 
 - (void)scrollViewDidScrollUp:(CGFloat)distants{
-    if( self.parkGuide.constant == -128 ) return;
-    
-    self.parkGuide.constant = self.parkGuide.constant - distants < -128 ? -128 : self.parkGuide.constant - distants;
-    [self adjustSunlight];
-    [self.peak layoutIfNeeded];
+    if( self.yosemiteLayoutConstant == -128 ) return;
+    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant - distants < -128 ? -128 : self.yosemiteLayoutConstant - distants;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField{
@@ -725,9 +518,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     if( [text isEqualToString:CRNoteInvalilContent] || [text isEqualToString:@""] ){
         textView.textColor = [UIColor colorWithWhite:109 / 255.0 alpha:1];
         textView.text = CRNoteInvalilContent;
-        [self.peakButtonCopy setTitle:[UIFont mdiContentPaste] forState:UIControlStateNormal];
-    }else
-        [self.peakButtonCopy setTitle:[UIFont mdiContentCopy] forState:UIControlStateNormal];
+    }
     
     return YES;
 }
@@ -742,9 +533,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)photoPreview{
     
-    CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.parkBear.image title:self.titleBoard.text];
+    CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.yosemite.image title:self.titleBoard.text];
     preview.photoDeletedHandler = ^{
-        self.parkBear.image = nil;
+//        self.parkBear.image = nil;
         self.crnote.photoAsset = nil;
     };
     [self presentViewController:preview animated:YES completion:nil];
@@ -782,7 +573,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         picker.themeColor = self.themeColor;
         
         picker.PHPreviewHandler = ^(UIImage *priview){
-            self.parkBear.image = priview;
+//            self.parkBear.image = priview;
         };
         
         picker.PHAssetHandler = ^(PHAsset *photoAsset){
@@ -791,7 +582,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                 self.crnote.photoAsset = photoAsset;
             else{
                 [self pop];
-                [self.parkBear setImage:nil];
+//                [self.parkBear setImage:nil];
             }
         };
         
@@ -804,7 +595,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         
     }else if( status == PHAuthorizationStatusDenied ){
         
-        [self peakMessage:PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING];
+        self.peak.notification = PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING;
         
     }else if( status == PHAuthorizationStatusNotDetermined ){
         
@@ -814,12 +605,12 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         
     }else if( status == PHAuthorizationStatusRestricted ){
         
-        [self peakMessage:@"Library access denied."];
+        self.peak.notification = @"Library access denied.";
         
     }
 }
 
-- (void)crnoteSave{
+- (void)letSave{
     
     self.crnote.content = self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];

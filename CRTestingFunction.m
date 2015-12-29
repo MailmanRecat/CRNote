@@ -30,12 +30,12 @@
     NSString *path, *patc;
     NSLog(@"saved photos %@ %@", enmu, enmi);
     while( (path = [enmu nextObject]) != nil || (patc = [enmi nextObject]) != nil ){
-        NSLog(@"%@", path);
-        NSLog(@"%@", patc);
+//        NSLog(@"%@", path);
+//        NSLog(@"%@", patc);
         [mutableString appendString:[NSString stringWithFormat:@"p: %@   t: %@\n ", path, patc]];
     }
     
-    NSLog(@"%@", mutableString);
+//    NSLog(@"%@", mutableString);
 }
 
 @end

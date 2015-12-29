@@ -10,4 +10,13 @@
 
 @interface CRPark : UIView
 
+@property( nonatomic, strong ) UIButton *dismissBtn;
+
+@property( nonatomic, strong ) UIColor *color;
+@property( nonatomic, strong ) UIImage *image;
+@property( nonatomic, strong ) UILabel *nameplate;
+@property( nonatomic, assign ) CGFloat  nameplateOpacity;
+
+- (instancetype)initFromColor:(UIColor *)color;
+
 @end

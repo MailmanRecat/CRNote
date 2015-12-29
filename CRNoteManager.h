@@ -11,10 +11,12 @@
 
 @interface CRNoteManager : NSObject
 
-@property( nonatomic, strong ) CRNote *CRNoteAsset;
+@property( nonatomic, strong ) CRNote *noteasset;
+@property( nonatomic, assign ) BOOL save;
 
 + (instancetype)defaultManager;
 
 + (NSArray<CRNote *> *)fetchNotes;
+
 
 @end
