@@ -388,23 +388,32 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     if( tag == 0 ){
         
-    }else if( tag == 1 ){
+    }
+    else if( tag == 1 ){
         self.noteEditable = !self.noteEditable;
-    }else if( tag == 2 ){
+    }
+    else if( tag == 2 ){
         [self fontPick];
-    }else if( tag == 3 ){
+    }
+    else if( tag == 3 ){
         self.crnote.type == CRNoteTypePhoto ? [self photoPreview] : [self photoPick];
-    }else if( tag == 4 ){
+    }
+    else if( tag == 4 ){
         [self colorPick];
-    }else if( tag == 5 ){
+    }
+    else if( tag == 5 ){
         
-    }else if( tag == 6 ){
+    }
+    else if( tag == 6 ){
         [self letPaste];
-    }else if( tag == 7 ){
+    }
+    else if( tag == 7 ){
         [self letCopy];
-    }else if( tag == 8 ){
+    }
+    else if( tag == 8 ){
         [self.view endEditing:YES];
-    }else if( tag == 9 ){
+    }
+    else if( tag == 9 ){
         self.peak.notification = nil;
     }
 }
