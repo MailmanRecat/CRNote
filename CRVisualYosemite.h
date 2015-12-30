@@ -10,4 +10,12 @@
 
 @interface CRVisualYosemite : UIVisualEffectView
 
+@property( nonatomic, strong ) UIButton *dismissBtn;
+
+@property( nonatomic, strong ) UIImage *image;
+@property( nonatomic, strong ) UILabel *nameplate;
+@property( nonatomic, assign ) CGFloat  contentOpacity;
+
+- (instancetype)initFromEffectStyle:(UIBlurEffectStyle)style;
+
 @end

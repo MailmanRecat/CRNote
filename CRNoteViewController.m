@@ -22,6 +22,8 @@
 
 //visual style
 #import "CRVisualPeak.h"
+#import "CRVisualYosemite.h"
+#import "CRVisualFloatingButton.h"
 
 static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library access denied, tap to setting.";
 
@@ -31,9 +33,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 @property( nonatomic, assign ) BOOL noteEditable;
 
-@property( nonatomic, strong ) CRPark *yosemite;
+@property( nonatomic, strong ) CRVisualYosemite *yosemite;
+//@property( nonatomic, strong ) CRPark *yosemite;
 @property( nonatomic, strong ) NSLayoutConstraint *yosemiteLayoutGuide;
-@property( nonatomic, assign ) CGFloat yosemiteLayoutConstant;
+//@property( nonatomic, assign ) CGFloat yosemiteLayoutConstant;
 @property( nonatomic, strong ) UIButton *floatingBtn;
 @property( nonatomic, assign ) BOOL      floatingEnable;
 //@property( nonatomic, assign ) BOOL floatingHidden;
@@ -42,7 +45,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 //@property( nonatomic, strong ) CRPeak *peak;
 @property( nonatomic, strong ) NSLayoutConstraint *peakLayoutGuide;
 
-@property( nonatomic, strong ) UIButton *floatingActionCheck;
+@property( nonatomic, strong ) CRVisualFloatingButton *floatingCheck;
+//@property( nonatomic, strong ) UIButton *floatingActionCheck;
 
 @property( nonatomic, strong ) UITextView *textBoard;
 @property( nonatomic, strong ) UITextField *titleBoard;
@@ -96,7 +100,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)setYosemiteLayoutConstant:(CGFloat)yosemiteLayoutConstant{
     self.yosemiteLayoutGuide.constant = yosemiteLayoutConstant;
-    self.yosemite.nameplateOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
+//    self.yosemite.nameplateOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
+    self.yosemite.contentOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
     
     [self.yosemite layoutIfNeeded];
 }
@@ -236,13 +241,17 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.yosemiteLayoutConstant = 0;
     self.peakLayoutGuide.constant = CR_PEAK_HEIGHT;
     
-    self.floatingBtn.hidden = NO;
-    self.floatingBtn.transform = CGAffineTransformMakeScale(0, 0);
+//    self.floatingBtn.hidden = NO;
+//    self.floatingBtn.transform = CGAffineTransformMakeScale(0, 0);
+    self.floatingCheck.hidden = NO;
+    self.floatingCheck.transform = CGAffineTransformMakeScale(0, 0);
     [self.view insertSubview:viewController.view belowSubview:self.yosemite];
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
-                         self.floatingEnable = YES;
+                         self.floatingCheck.enabled = YES;
+                         self.floatingCheck.alpha = 1;
+                         self.floatingCheck.transform = CGAffineTransformMakeScale(1, 1);
                          
                          viewController.view.frame = self.view.frame;
                          
@@ -261,7 +270,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
-                         self.floatingEnable = NO;
+                         self.floatingCheck.enabled = NO;
+                         self.floatingCheck.alpha = 0;
+                         self.floatingCheck.transform = CGAffineTransformMakeScale(0.3, 0.3);
                          
                          target.view.frame = ({
                              CGRect frame = self.view.frame;
@@ -271,7 +282,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
-                         self.floatingBtn.hidden = YES;
+                         self.floatingCheck.hidden = YES;
                          [target.view removeFromSuperview];
                          [target removeFromParentViewController];
                      }];
@@ -281,7 +292,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.themeColorString = self.crnote.colorType = string;
     self.textBoard.tintColor = self.themeColor = color;
-    [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
+//    [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
 }
 
 - (void)updateNoteFont:(NSString *)name size:(NSUInteger)size{
@@ -337,35 +348,58 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 //}
 
 - (void)letPark{
+//    self.yosemite = ({
+//        CRPark *yose = [[CRPark alloc] initFromColor:self.themeColor];
+//        [yose setTranslatesAutoresizingMaskIntoConstraints:NO];
+//        [self.view addSubview:yose];
+//        [yose.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+//        [yose.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+//        [yose.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 128.0f].active = YES;
+//        self.yosemiteLayoutGuide = [yose.topAnchor constraintEqualToAnchor:self.view.topAnchor];
+//        self.yosemiteLayoutGuide.active = YES;
+//        self.yosemiteLayoutConstant = 0;
+//        yose;
+//    });
+    
     self.yosemite = ({
-        CRPark *yose = [[CRPark alloc] initFromColor:self.themeColor];
-        [yose setTranslatesAutoresizingMaskIntoConstraints:NO];
+        CRVisualYosemite *yose = [[CRVisualYosemite alloc] initFromEffectStyle:UIBlurEffectStyleDark];
         [self.view addSubview:yose];
         [yose.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
         [yose.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-        [yose.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 128.0f].active = YES;
         self.yosemiteLayoutGuide = [yose.topAnchor constraintEqualToAnchor:self.view.topAnchor];
         self.yosemiteLayoutGuide.active = YES;
         self.yosemiteLayoutConstant = 0;
         yose;
     });
     
-    self.floatingBtn = ({
-        UIButton *floating = [[UIButton alloc] init];
-        floating.translatesAutoresizingMaskIntoConstraints = NO;
-        floating.layer.cornerRadius = 56 / 2.0f;
-        floating.backgroundColor = [UIColor whiteColor];
-        floating.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
-        [self.view addSubview:floating];
-        [floating.rightAnchor constraintEqualToAnchor:self.yosemite.rightAnchor constant:-16].active = YES;
-        [floating.bottomAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor constant:28].active = YES;
-        [floating.heightAnchor constraintEqualToAnchor:floating.widthAnchor].active = YES;
-        [floating.widthAnchor constraintEqualToConstant:56.0f].active = YES;
-        [floating makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
-        [floating setTitle:[UIFont mdiCheck] forState:UIControlStateNormal];
-        [floating setTitleColor:self.themeColor forState:UIControlStateNormal];
-        [floating addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
-        floating;
+//    self.floatingBtn = ({
+//        UIButton *floating = [[UIButton alloc] init];
+//        floating.translatesAutoresizingMaskIntoConstraints = NO;
+//        floating.layer.cornerRadius = 56 / 2.0f;
+//        floating.backgroundColor = [UIColor whiteColor];
+//        floating.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
+//        [self.view addSubview:floating];
+//        [floating.rightAnchor constraintEqualToAnchor:self.yosemite.rightAnchor constant:-16].active = YES;
+//        [floating.bottomAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor constant:28].active = YES;
+//        [floating.heightAnchor constraintEqualToAnchor:floating.widthAnchor].active = YES;
+//        [floating.widthAnchor constraintEqualToConstant:56.0f].active = YES;
+//        [floating makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
+//        [floating setTitle:[UIFont mdiCheck] forState:UIControlStateNormal];
+//        [floating setTitleColor:self.themeColor forState:UIControlStateNormal];
+//        [floating addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
+//        floating;
+//    });
+    
+    self.floatingCheck = ({
+        CRVisualFloatingButton *check = [[CRVisualFloatingButton alloc] initFromFont:[UIFont MaterialDesignIconsWithSize:24]
+                                                                             title:[UIFont mdiCheck]
+                                                                   blurEffectStyle:UIBlurEffectStyleExtraLight];
+        [check addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:check];
+        [check.rightAnchor constraintEqualToAnchor:self.view.rightAnchor constant:-16].active = YES;
+        [check.bottomAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor constant:28].active = YES;
+        check.hidden = YES;
+        check;
     });
     
     self.yosemite.nameplate.text = @"ld install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single ";
@@ -497,18 +531,19 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     CGFloat pointY = scrollView.contentOffset.y;
     
     BOOL shouldLayout = NO, isScrollUp = NO;
-    CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.yosemiteLayoutConstant);
+    CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.yosemiteLayoutGuide.constant);
     CGFloat distants = pointY - self.lastPointMark;
-    
-//    if( self.lastPointMark < pointY )
-//        isScrollUp = YES;
-//    else if( self.lastPointMark > pointY )
-//        isScrollUp = NO;
     
     isScrollUp = self.lastPointMark < pointY ? YES : NO;
     
-    if( pointY > -1 && pointY < scrollView.contentSize.height - offset + 1 ){
+    if( pointY > 0 && pointY < scrollView.contentSize.height - offset + 1 ){
         shouldLayout = YES;
+    }
+    
+    if( pointY <= 0 ){
+        self.yosemiteLayoutGuide.constant = 0;
+        [self updateYosemiteOpacity];
+        [self.yosemite layoutIfNeeded];
     }
     
     if( shouldLayout && self.canAdjust )
@@ -517,14 +552,24 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.lastPointMark = pointY;
 }
 
+- (void)updateYosemiteOpacity{
+    self.yosemite.contentOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
+}
+
 - (void)scrollviewDidScrollDown:(CGFloat)distants{
-    if( self.yosemiteLayoutConstant == 0 ) return;
-    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant + distants > 0 ? 0 : self.yosemiteLayoutConstant + distants;
+    if( self.yosemiteLayoutGuide.constant == 0 ) return;
+//    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant + distants > 0 ? 0 : self.yosemiteLayoutConstant + distants;
+    self.yosemiteLayoutGuide.constant = self.yosemiteLayoutGuide.constant + distants > 0 ? 0 : self.yosemiteLayoutGuide.constant + distants;
+    [self updateYosemiteOpacity];
+    [self.yosemite layoutIfNeeded];
 }
 
 - (void)scrollViewDidScrollUp:(CGFloat)distants{
-    if( self.yosemiteLayoutConstant == -128 ) return;
-    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant - distants < -128 ? -128 : self.yosemiteLayoutConstant - distants;
+    if( self.yosemiteLayoutGuide.constant == -128 ) return;
+//    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant - distants < -128 ? -128 : self.yosemiteLayoutConstant - distants;
+    self.yosemiteLayoutGuide.constant = self.yosemiteLayoutGuide.constant - distants < -128 ? -128 : self.yosemiteLayoutGuide.constant - distants;
+    [self updateYosemiteOpacity];
+    [self.yosemite layoutIfNeeded];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField{
