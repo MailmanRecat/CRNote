@@ -49,11 +49,28 @@
     NSString *basePath = [NSString stringWithFormat:@"%@/Documents/CRNotePhotos/", NSHomeDirectory()];
     NSString *basethum = [NSString stringWithFormat:@"%@/Documents/CRNoteThumbnails/", NSHomeDirectory()];
     
+    NSString *testPath = [NSString stringWithFormat:@"%@/Documents/testFile", NSHomeDirectory()];
+    
+//    BOOL *isDir;
+//    if( ![[NSFileManager defaultManager] fileExistsAtPath:testPath isDirectory:isDir] || !isDir ){
+//        [[NSFileManager defaultManager] createDirectoryAtPath:testPath withIntermediateDirectories:YES attributes:nil error:nil];
+//    }
+    
     NSDirectoryEnumerator *enmu = [[NSFileManager defaultManager] enumeratorAtPath:basePath];
     NSDirectoryEnumerator *thum = [[NSFileManager defaultManager] enumeratorAtPath:basethum];
     
     NSString *once;
     __block NSMutableString *path = [[NSMutableString alloc] initWithString:@" "];
+    
+    NSArray *notedata = [CRNoteDatabase selectNoteFromAll];
+    BOOL save = [notedata writeToFile:[NSString stringWithFormat:@"%@/notedata.txt", testPath] atomically:YES];
+    CGFloat len = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/notedata.txt", testPath]].length / 1024.0;
+//    NSLog(@"save array %d %.2lf KB", save, len);
+    
+    [path appendString:[NSString stringWithFormat:@"%.2lf KB", len]];
+    [path appendFormat:@"\n "];
+    [path appendFormat:@"\n "];
+    
     NSUInteger counter = 0;
     while( (once = [enmu nextObject]) != nil ){
         counter++;

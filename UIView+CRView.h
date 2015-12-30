@@ -17,4 +17,6 @@
 - (void)makeShadowWithPath:(CGPathRef)path size:(CGSize)offset opacity:(CGFloat)opacity radius:(CGFloat)radius;
 - (void)makeButtonTitle:(NSString *)title titleColor:(UIColor *)color state:(UIControlState)state;
 
+- (void)letShadowWithSize:(CGSize)offset opacity:(CGFloat)opacity radius:(CGFloat)radius;
+
 @end

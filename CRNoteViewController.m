@@ -16,8 +16,12 @@
 #import "CRPhotoPreviewController.h"
 #import "CRPHAssetsController.h"
 
+//google style
 #import "CRPark.h"
 #import "CRPeak.h"
+
+//visual style
+#import "CRVisualPeak.h"
 
 static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library access denied, tap to setting.";
 
@@ -34,7 +38,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 @property( nonatomic, assign ) BOOL      floatingEnable;
 //@property( nonatomic, assign ) BOOL floatingHidden;
 
-@property( nonatomic, strong ) CRPeak *peak;
+@property( nonatomic, strong ) CRVisualPeak *peak;
+//@property( nonatomic, strong ) CRPeak *peak;
 @property( nonatomic, strong ) NSLayoutConstraint *peakLayoutGuide;
 
 @property( nonatomic, strong ) UIButton *floatingActionCheck;
@@ -98,6 +103,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 -(NSArray<id<UIPreviewActionItem>> *)previewActionItems {
     
+    UIPreviewAction *moveToTopAction = [UIPreviewAction actionWithTitle:@"move to top" style:UIPreviewActionStyleDefault handler:
+                                        ^(UIPreviewAction *action, UIViewController *previewcontroller){
+                                            
+                                            if( self.crnoteDeleteActionHandler )
+                                                self.crnoteDeleteActionHandler( action.title );
+                                            
+                                        }];
+    
     UIPreviewAction *deleteAction = [UIPreviewAction actionWithTitle:@"Delete" style:UIPreviewActionStyleDestructive handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewController) {
         
         if( self.crnoteDeleteActionHandler )
@@ -114,7 +127,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     UIPreviewActionGroup *delete = [UIPreviewActionGroup actionGroupWithTitle:@"Delete" style:UIPreviewActionStyleDestructive actions:@[ deleteAction, cancel ]];
     
-    return @[ delete ];
+    return @[ moveToTopAction, delete ];
 }
 
 - (void)viewThenLoad{
@@ -143,6 +156,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     [self.textBoard.topAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor].active = YES;
     [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
+//    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
         self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
@@ -200,7 +214,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                           delay:0.0f
                         options:[info[UIKeyboardAnimationCurveUserInfoKey] integerValue]
                      animations:^{
-                         [self.peak layoutIfNeeded];
+                         [self.view layoutIfNeeded];
                      }
                      completion:nil];
 }
@@ -362,11 +376,23 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)letPeak{
+//    self.peak = ({
+//        CRPeak *peak = [[CRPeak alloc] init];
+//        [peak setTranslatesAutoresizingMaskIntoConstraints:NO];
+//        [self.view addSubview:peak];
+//        [peak makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
+//        [peak.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+//        [peak.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+//        self.peakLayoutGuide = [peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+//        self.peakLayoutGuide.active = YES;
+//        peak;
+//    });
+    
     self.peak = ({
-        CRPeak *peak = [[CRPeak alloc] init];
-        [peak setTranslatesAutoresizingMaskIntoConstraints:NO];
+        CRVisualPeak *peak = [[CRVisualPeak alloc] initFromEffectStyle:UIBlurEffectStyleDark];
+        peak.translatesAutoresizingMaskIntoConstraints = NO;
         [self.view addSubview:peak];
-        [peak makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
+        [peak letShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
         [peak.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
         [peak.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
         self.peakLayoutGuide = [peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
