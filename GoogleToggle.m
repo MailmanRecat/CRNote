@@ -6,7 +6,7 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#define GOOGOLE_TOGGLE_SWIPE_SENSITIVITY 6
+#define GOOGOLE_TOGGLE_SWIPE_SENSITIVITY 40
 
 #import "GoogleToggle.h"
 #import "UIView+CRView.h"
@@ -49,6 +49,12 @@
     [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
     
     return self;
+}
+
+- (void)addTarget:(id)target action:(SEL)action{
+    self.target = target;
+    self.action = action;
+    [self addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)setEnable:(BOOL)enable{
@@ -148,6 +154,14 @@
         }
     }
     else if( pan.state == UIGestureRecognizerStateEnded ){
+        
+        if( self.tipLayoutGuide.constant != 0 || self.tipLayoutGuide.constant != (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT) ){
+            
+            self.tipLayoutGuide.constant = self.tipLayoutGuide.constant < (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT) / 2.0 ? 0 : (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT);
+            
+            [self letTipStatusUpdate];
+        }
+        
         if( self.target && self.action && (self.panStatusTick != self.enable) ){
             ((void (*)(id, SEL))[self.target methodForSelector:self.action])(self.target, self.action);
         }

@@ -31,19 +31,17 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 @property( nonatomic, strong ) NSLayoutConstraint *yosemiteLayoutGuide;
 @property( nonatomic, assign ) CGFloat yosemiteLayoutConstant;
 @property( nonatomic, strong ) UIButton *floatingBtn;
-@property( nonatomic, assign ) BOOL floatingHidden;
+@property( nonatomic, assign ) BOOL      floatingEnable;
+//@property( nonatomic, assign ) BOOL floatingHidden;
 
 @property( nonatomic, strong ) CRPeak *peak;
 @property( nonatomic, strong ) NSLayoutConstraint *peakLayoutGuide;
-
 
 @property( nonatomic, strong ) UIButton *floatingActionCheck;
 
 @property( nonatomic, strong ) UITextView *textBoard;
 @property( nonatomic, strong ) UITextField *titleBoard;
 @property( nonatomic, assign ) CGFloat lastPointMark;
-
-@property( nonatomic, strong ) NSMutableArray<UIColor *> *colorQueue;
 
 @property( nonatomic, assign ) BOOL canAdjust;
 @property( nonatomic, assign ) BOOL isFirstTimeViewAppear;
@@ -76,17 +74,18 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }
 }
 
-- (void)setFloatingHidden:(BOOL)floatingHidden{
-    if( _floatingHidden == floatingHidden ) return;
-    _floatingHidden = floatingHidden;
+- (void)setFloatingEnable:(BOOL)floatingEnable{
+    if( _floatingEnable == floatingEnable ) return;
+    _floatingEnable = floatingEnable;
     
-    if( _floatingHidden ){
+    if( floatingEnable ){
+        self.floatingBtn.enabled = YES;
+        self.floatingBtn.alpha = 1;
+        self.floatingBtn.transform = CGAffineTransformMakeScale(1, 1);
+    }else{
+        self.floatingBtn.enabled = NO;
         self.floatingBtn.alpha = 0;
         self.floatingBtn.transform = CGAffineTransformMakeScale(0.3, 0.3);
-    }else{
-        self.floatingBtn.hidden = NO;
-        self.floatingBtn.transform = CGAffineTransformMakeScale(1, 1);
-        self.floatingBtn.alpha = 1;
     }
 }
 
@@ -212,7 +211,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)push:(UIViewController *)viewController{
     self.canAdjust = NO;
-    [self parkSunset];
     [self addChildViewController:viewController];
     
     viewController.view.frame = ({
@@ -224,14 +222,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.yosemiteLayoutConstant = 0;
     self.peakLayoutGuide.constant = CR_PEAK_HEIGHT;
     
-    self.floatingActionCheck.enabled = YES;
-    self.floatingActionCheck.hidden = NO;
-    self.floatingActionCheck.transform = CGAffineTransformMakeScale(0, 0);
-    [self.view insertSubview:viewController.view belowSubview:self.park];
+    self.floatingBtn.hidden = NO;
+    self.floatingBtn.transform = CGAffineTransformMakeScale(0, 0);
+    [self.view insertSubview:viewController.view belowSubview:self.yosemite];
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
-                         self.floatingActionCheck.transform = CGAffineTransformMakeScale(1, 1);
+                         self.floatingEnable = YES;
+                         
                          viewController.view.frame = self.view.frame;
                          
                          [self.peak layoutIfNeeded];
@@ -249,8 +247,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [UIView animateWithDuration:0.4f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
-                         self.floatingActionCheck.transform = CGAffineTransformMakeScale(0.3, 0.3);
-                         self.floatingActionCheck.alpha = 0;
+                         self.floatingEnable = NO;
                          
                          target.view.frame = ({
                              CGRect frame = self.view.frame;
@@ -260,9 +257,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          
                          [self.peak layoutIfNeeded];
                      }completion:^(BOOL f){
-                         self.floatingActionCheck.enabled = NO;
-                         self.floatingActionCheck.alpha = 1;
-                         self.floatingActionCheck.hidden = YES;
+                         self.floatingBtn.hidden = YES;
                          [target.view removeFromSuperview];
                          [target removeFromParentViewController];
                      }];
@@ -344,6 +339,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.floatingBtn = ({
         UIButton *floating = [[UIButton alloc] init];
         floating.translatesAutoresizingMaskIntoConstraints = NO;
+        floating.layer.cornerRadius = 56 / 2.0f;
         floating.backgroundColor = [UIColor whiteColor];
         floating.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
         [self.view addSubview:floating];
@@ -435,7 +431,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.lastPointMark = 0;
     
-    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
+    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own appom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
     
     self.titleBoard = ({
         UITextField *board = [[UITextField alloc] init];
@@ -478,10 +474,12 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.yosemiteLayoutConstant);
     CGFloat distants = pointY - self.lastPointMark;
     
-    if( self.lastPointMark < pointY )
-        isScrollUp = YES;
-    else if( self.lastPointMark > pointY )
-        isScrollUp = NO;
+//    if( self.lastPointMark < pointY )
+//        isScrollUp = YES;
+//    else if( self.lastPointMark > pointY )
+//        isScrollUp = NO;
+    
+    isScrollUp = self.lastPointMark < pointY ? YES : NO;
     
     if( pointY > -1 && pointY < scrollView.contentSize.height - offset + 1 ){
         shouldLayout = YES;

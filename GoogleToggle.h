@@ -21,5 +21,6 @@
 @property( nonatomic, strong ) NSString *disableString;
 
 - (instancetype)initWithTarget:(id)target action:(SEL)action;
+- (void)addTarget:(id)target action:(SEL)action;
 
 @end
