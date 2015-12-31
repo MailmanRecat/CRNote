@@ -46,7 +46,7 @@
     self.borderTop = [CALayer layer];
     self.borderBottom = [CALayer layer];
     
-    self.borderTop.backgroundColor = self.borderBottom.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1].CGColor;
+    self.borderTop.backgroundColor = self.borderBottom.backgroundColor = [UIColor colorWithWhite:89 / 255.0 alpha:1].CGColor;
     
     self.clipsToBounds = YES;
     [self.contentView addSubview:self.crimagev];

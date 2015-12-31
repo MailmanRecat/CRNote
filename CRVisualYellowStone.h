@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GoogleToggle.h"
 
 @interface CRVisualYellowStone : UIVisualEffectView
 
@@ -14,7 +15,8 @@
 @property( nonatomic, assign ) BOOL     shadowEnable;
 @property( nonatomic, strong ) UILabel *nameplate;
 @property( nonatomic, strong ) UIButton *stone;
-//@property( nonatomic, strong ) GoogleToggle *toggle;
+@property( nonatomic, strong ) UIButton *leftStone;
+@property( nonatomic, strong ) GoogleToggle *toggle;
 
 - (instancetype)initFromEffectStyle:(UIBlurEffectStyle)style;
 

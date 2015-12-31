@@ -94,9 +94,9 @@
         
         NSData *data = [[NSFileManager defaultManager] contentsAtPath:[NSString stringWithFormat:@"%@%@", basethum, thumS]];
         
-        CGFloat len = data.length / 1024 / 1024.0;
+        CGFloat len = data.length / 1024.0;
         
-        [path appendFormat:@"   %.3f MB \n ", len];
+        [path appendFormat:@"   %.1f KB \n ", len];
     }
     
     [path appendFormat:@"%ld \n ", counter];

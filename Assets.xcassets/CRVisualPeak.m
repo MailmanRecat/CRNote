@@ -27,7 +27,10 @@
 }
 
 - (NSArray<UIButton *> *)btns{
-    return @[ self.remove, self.lock, self.font, self.photo, self.save, self.paste, self.copying, self.keyboard, self.message ];
+    if( !self.remove || !self.lock || !self.font || !self.photo || !self.palette || !self.save || !self.paste || !self.copying || !self.keyboard || !self.message )
+        return nil;
+    
+    return @[ self.remove, self.lock, self.font, self.photo, self.palette, self.save, self.paste, self.copying, self.keyboard, self.message ];
 }
 
 - (void)setNotification:(NSString *)notification{
@@ -42,14 +45,21 @@
 }
 
 - (void)layoutSelf:(CGFloat)height title:(NSString *)title{
+    [self.message layoutIfNeeded];
     self.selfLayoutGuide.constant = height;
+    
+    if( title ) self.message.hidden = NO;
+    self.message.alpha = title ? 0 : 1;
     [UIView animateWithDuration:0.25f
                           delay:0.0f
                         options:(7 << 16)
                      animations:^{
-                         [self layoutIfNeeded];
-                     }completion:^(BOOL f){
                          
+                         self.message.alpha = title ? 1 : 0;
+                         
+                         [self.superview layoutIfNeeded];
+                     }completion:^(BOOL f){
+                         if( !title ) self.message.hidden = YES;
                      }];
 }
 
@@ -63,16 +73,16 @@
         [UIView animateWithDuration:0.25f
                          animations:^{
                              self.paste.alpha = self.copying.alpha = self.keyboard.alpha = 1;
-                             self.remove.alpha = self.lock.alpha = self.font.alpha = self.photo.alpha = self.save.alpha = 0;
+                             self.remove.alpha = self.lock.alpha = self.font.alpha = self.photo.alpha = self.palette.alpha = self.save.alpha = 0;
                          }completion:^(BOOL f){
-                             self.remove.hidden = self.lock.hidden = self.font.hidden = self.photo.hidden = self.save.hidden = YES;
+                             self.remove.hidden = self.lock.hidden = self.font.hidden = self.photo.hidden = self.palette.hidden = self.save.hidden = YES;
                          }];
     }else{
-        self.remove.hidden = self.lock.hidden = self.font.hidden = self.photo.hidden = self.save.hidden = NO;
+        self.remove.hidden = self.lock.hidden = self.font.hidden = self.photo.hidden = self.palette.hidden = self.save.hidden = NO;
         [UIView animateWithDuration:0.25f
                          animations:^{
                              self.paste.alpha = self.copying.alpha = self.keyboard.alpha = 0;
-                             self.remove.alpha = self.lock.alpha = self.font.alpha = self.photo.alpha = self.save.alpha = 1;
+                             self.remove.alpha = self.lock.alpha = self.font.alpha = self.photo.alpha = self.palette.alpha = self.save.alpha = 1;
                          }completion:^(BOOL f){
                              self.paste.hidden = self.copying.hidden = self.keyboard.hidden = YES;
                          }];
@@ -97,6 +107,7 @@
     self.lock     = letbtn([UIFont mdiLock],          1);
     self.font     = letbtn([UIFont mdiParking],       2);
     self.photo    = letbtn([UIFont mdiFileImageBox],  3);
+    self.palette  = letbtn([UIFont mdiCheckboxBlankCircle], 4);
     self.save     = letbtn([UIFont mdiPackageDown],   5);
     self.paste    = letbtn([UIFont mdiContentPaste],  6);
     self.copying  = letbtn([UIFont mdiContentCopy],   7);
@@ -104,9 +115,8 @@
     self.message  = ({
         UIButton *button = letbtn(nil,                9);
         [self.contentView addSubview:button];
-        [button.titleLabel setFont:[CRNoteApp appFontOfSize:17 weight:UIFontWeightMedium]];
+        [button.titleLabel setFont:[CRNoteApp appFontOfSize:16 weight:UIFontWeightRegular]];
         [button setTitleColor:[UIColor colorWithWhite:237 / 255.0 alpha:1] forState:UIControlStateNormal];
-//        [button setBackgroundColor:[UIColor colorWithWhite:50 / 255.0 alpha:1]];
         [button setContentEdgeInsets:UIEdgeInsetsMake(0, 16, 0, -16)];
         [button setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
         [button.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
@@ -117,7 +127,7 @@
     });
     
     __block NSLayoutAnchor *contrastAnchor;
-    [@[ self.remove, self.lock, self.font, self.photo, self.save ] enumerateObjectsUsingBlock:
+    [@[ self.remove, self.lock, self.font, self.photo, self.palette, self.save ] enumerateObjectsUsingBlock:
      ^(UIView *btn, NSUInteger index, BOOL *sS){
          [self.contentView addSubview:btn];
          
@@ -125,7 +135,7 @@
              contrastAnchor = self.contentView.leftAnchor;
          
          [btn.heightAnchor constraintEqualToConstant:CR_VISUAL_PEAK_HEIGHT].active = YES;
-         [btn.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:(1 / 5.0)].active = YES;
+         [btn.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:(1 / 6.0)].active = YES;
          [btn.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
          [btn.leftAnchor constraintEqualToAnchor:contrastAnchor].active = YES;
          

@@ -26,7 +26,4 @@
 
 - (instancetype)initFromCRNote:(CRNote *)note themeColor:(UIColor *)themeColor;
 
-- (void)parkSunset;
-- (void)parkSunrise;
-
 @end

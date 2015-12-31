@@ -74,22 +74,38 @@
     self.nameplate = ({
         UILabel *plate = [[UILabel alloc] init];
         plate.translatesAutoresizingMaskIntoConstraints = NO;
-        plate.font = [CRNoteApp appFontOfSize:25 weight:UIFontWeightRegular];
+        plate.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightLight];
         plate.text = @"Notes";
         plate.textColor = style == UIBlurEffectStyleDark ? [UIColor whiteColor] : [UIColor blackColor];
         [self.contentView addSubview:plate];
-        [plate.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:16].active = YES;
+        [plate.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:64].active = YES;
         [plate.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:0.6].active = YES;
         [plate.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
         [plate.heightAnchor constraintEqualToConstant:56.0].active = YES;
         plate;
     });
     
+    self.leftStone = ({
+        UIButton *sto = [[UIButton alloc] init];
+        sto.translatesAutoresizingMaskIntoConstraints = NO;
+        [sto.titleLabel setFont:[UIFont MaterialDesignIconsWithSize:24]];
+        [sto setTitle:[UIFont mdiMenu] forState:UIControlStateNormal];
+        [sto setTitleColor:style == UIBlurEffectStyleDark ? [UIColor whiteColor] : [UIColor blackColor] forState:UIControlStateNormal];
+        [sto setTitleColor:style == UIBlurEffectStyleDark ? [UIColor colorWithWhite:1 alpha:0.5] : [UIColor colorWithWhite:0 alpha:0.5]
+                  forState:UIControlStateHighlighted];
+        [self.contentView addSubview:sto];
+        [sto.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor].active = YES;
+        [sto.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
+        [sto.widthAnchor constraintEqualToConstant:56.0].active = YES;
+        [sto.heightAnchor constraintEqualToConstant:56.0].active = YES;
+        sto;
+    });
+    
     self.stone = ({
         UIButton *sto = [[UIButton alloc] init];
         sto.translatesAutoresizingMaskIntoConstraints = NO;
         [sto.titleLabel setFont:[UIFont MaterialDesignIconsWithSize:24]];
-        [sto setTitle:[UIFont mdiSettings] forState:UIControlStateNormal];
+        [sto setTitle:[UIFont mdiMagnify] forState:UIControlStateNormal];
         [sto setTitleColor:style == UIBlurEffectStyleDark ? [UIColor whiteColor] : [UIColor blackColor] forState:UIControlStateNormal];
         [sto setTitleColor:style == UIBlurEffectStyleDark ? [UIColor colorWithWhite:1 alpha:0.5] : [UIColor colorWithWhite:0 alpha:0.5]
                   forState:UIControlStateHighlighted];
@@ -101,13 +117,14 @@
         sto;
     });
     
-//    self.toggle = ({
-//        GoogleToggle *tog = [[GoogleToggle alloc] init];
-//        [self.contentView addSubview:tog];
-//        [tog.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-56].active = YES;
-//        [tog.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-16].active = YES;
-//        tog;
-//    });
+    self.toggle = ({
+        GoogleToggle *tog = [[GoogleToggle alloc] init];
+        tog.tipTheme = [UIColor colorWithWhite:89 / 255 alpha:1];
+        [self.contentView addSubview:tog];
+        [tog.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-56].active = YES;
+        [tog.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-16].active = YES;
+        tog;
+    });
     
 }
 

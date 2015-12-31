@@ -19,7 +19,7 @@
 @property( nonatomic, strong ) NSIndexPath *craigMonkeyIndexPath;
 @property( nonatomic, strong ) NSLayoutConstraint *craigMonkeyGuide;
 
-@property( nonatomic, strong ) UIView *peak;
+@property( nonatomic, strong ) UIVisualEffectView *peak;
 @property( nonatomic, strong ) UIButton *peakButtonFontName;
 @property( nonatomic, strong ) UIButton *peakButtonFontSize;
 @property( nonatomic, assign ) BOOL canMove;
@@ -36,7 +36,7 @@
 - (void)viewDidLoad{
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.themeColor = [UIColor themeColorFromString:CRThemeColorDefault];
+    self.themeColor = [UIColor colorWithWhite:89 / 255.0 alpha:1];
     self.canMove = YES;
     
     [self makeCraigBear];
@@ -97,7 +97,7 @@
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     
-    self.craigBear.backgroundColor = self.craigMonkey.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1];
+    self.craigBear.backgroundColor = self.craigMonkey.backgroundColor = [UIColor colorWithWhite:89 / 255.0 alpha:1];
 }
 
 - (void)viewDidDisappear:(BOOL)animated{
@@ -112,18 +112,16 @@
         button.tag = 1000 + tag;
         button.titleLabel.font = [CRNoteApp appFontOfSize:19 weight:UIFontWeightMedium];
         button.backgroundColor = [UIColor clearColor];
-        [button setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
-        [button setTitleColor:self.themeColor forState:UIControlStateDisabled];
+        [button setTitleColor:[UIColor colorWithWhite:255 / 255.0 alpha:1] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor colorWithWhite:1 alpha:0.6] forState:UIControlStateDisabled];
         [button setTitle:title forState:UIControlStateNormal];
         [button addTarget:self action:@selector(peakAction:) forControlEvents:UIControlEventTouchUpInside];
         return button;
     };
     
     self.peak = ({
-        UIView *peak = [[UIView alloc] init];
+        UIVisualEffectView *peak = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
         peak.translatesAutoresizingMaskIntoConstraints = NO;
-        peak.backgroundColor = [UIColor whiteColor];
-        [peak makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
         peak;
     });
     
@@ -134,7 +132,7 @@
     [@[ self.peakButtonFontName, self.peakButtonFontSize ]
      enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger index, BOOL *sS){
          obj.translatesAutoresizingMaskIntoConstraints = NO;
-         [self.peak addSubview:obj];
+         [self.peak.contentView addSubview:obj];
          
          [obj.heightAnchor constraintEqualToAnchor:self.peak.heightAnchor].active = YES;
          [obj.widthAnchor constraintEqualToAnchor:self.peak.widthAnchor multiplier:( 1 / 2.0 )].active = YES;

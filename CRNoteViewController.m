@@ -34,19 +34,12 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 @property( nonatomic, assign ) BOOL noteEditable;
 
 @property( nonatomic, strong ) CRVisualYosemite *yosemite;
-//@property( nonatomic, strong ) CRPark *yosemite;
 @property( nonatomic, strong ) NSLayoutConstraint *yosemiteLayoutGuide;
-//@property( nonatomic, assign ) CGFloat yosemiteLayoutConstant;
-@property( nonatomic, strong ) UIButton *floatingBtn;
-@property( nonatomic, assign ) BOOL      floatingEnable;
-//@property( nonatomic, assign ) BOOL floatingHidden;
 
 @property( nonatomic, strong ) CRVisualPeak *peak;
-//@property( nonatomic, strong ) CRPeak *peak;
 @property( nonatomic, strong ) NSLayoutConstraint *peakLayoutGuide;
 
 @property( nonatomic, strong ) CRVisualFloatingButton *floatingCheck;
-//@property( nonatomic, strong ) UIButton *floatingActionCheck;
 
 @property( nonatomic, strong ) UITextView *textBoard;
 @property( nonatomic, strong ) UITextField *titleBoard;
@@ -83,32 +76,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }
 }
 
-- (void)setFloatingEnable:(BOOL)floatingEnable{
-    if( _floatingEnable == floatingEnable ) return;
-    _floatingEnable = floatingEnable;
-    
-    if( floatingEnable ){
-        self.floatingBtn.enabled = YES;
-        self.floatingBtn.alpha = 1;
-        self.floatingBtn.transform = CGAffineTransformMakeScale(1, 1);
-    }else{
-        self.floatingBtn.enabled = NO;
-        self.floatingBtn.alpha = 0;
-        self.floatingBtn.transform = CGAffineTransformMakeScale(0.3, 0.3);
-    }
-}
-
-- (void)setYosemiteLayoutConstant:(CGFloat)yosemiteLayoutConstant{
-    self.yosemiteLayoutGuide.constant = yosemiteLayoutConstant;
-//    self.yosemite.nameplateOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
-    self.yosemite.contentOpacity = fabs(self.yosemiteLayoutGuide.constant) / 128.0;
-    
-    [self.yosemite layoutIfNeeded];
-}
 
 -(NSArray<id<UIPreviewActionItem>> *)previewActionItems {
     
-    UIPreviewAction *moveToTopAction = [UIPreviewAction actionWithTitle:@"move to top" style:UIPreviewActionStyleDefault handler:
+    UIPreviewAction *moveToTopAction = [UIPreviewAction actionWithTitle:@"Move to top" style:UIPreviewActionStyleDefault handler:
                                         ^(UIPreviewAction *action, UIViewController *previewcontroller){
                                             
                                             if( self.crnoteDeleteActionHandler )
@@ -148,8 +119,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     [self viewThenLoad];
     [self letTextBoard];
-//    [self makePark];
-//    [self makePeak];
     [self letPark];
     [self letPeak];
     
@@ -158,10 +127,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)viewLastLoad{
-    
     [self.textBoard.topAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor].active = YES;
     [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
-//    [self.textBoard.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
         self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
@@ -173,25 +140,32 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.textBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
-    if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] )
+    if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] ){
         self.titleBoard.text = self.crnote.title;
+        self.yosemite.nameplate.text = self.crnote.title;
+    }else{
+        self.yosemite.nameplate.text = CRNoteInvalilTitle;
+    }
     
-//    self.textBoard.text = self.crnote.content;
+    if( ![self.crnote.content isEqualToString:CRNoteInvalilContent] ){
+        self.textBoard.text = self.crnote.content;
+        self.textBoard.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
+    }else{
+        self.textBoard.text = @"Note";
+        self.textBoard.textColor = [UIColor colorWithWhite:107 / 255.0 alpha:1];
+    }
+    
     self.textBoard.tintColor = self.themeColor;
-    
-    self.textBoard.textColor =
-    ([self.textBoard.text isEqualToString:@""] || [self.textBoard.text isEqualToString:CRNoteInvalilContent]) ?
-    [UIColor colorWithWhite:109 / 255.0 alpha:1] : [UIColor colorWithWhite:17 / 255.0 alpha:1];
 }
 
 - (void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     
     if( self.isPreview ){
-        self.dismissButton.hidden = YES;
+        self.yosemite.dismissBtn.hidden = YES;
         self.peak.hidden = YES;
     }else{
-        self.dismissButton.hidden = NO;
+        self.yosemite.dismissBtn.hidden = NO;
         self.peak.hidden = NO;
     }
 }
@@ -219,6 +193,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                           delay:0.0f
                         options:[info[UIKeyboardAnimationCurveUserInfoKey] integerValue]
                      animations:^{
+                         
+                         if( self.peak.alpha != 1 )
+                             self.peak.alpha = 1;
+                         
                          [self.view layoutIfNeeded];
                      }
                      completion:nil];
@@ -238,15 +216,21 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         frame;
     });
     
-    self.yosemiteLayoutConstant = 0;
+    self.peak.notification = nil;
     self.peakLayoutGuide.constant = CR_PEAK_HEIGHT;
     
-//    self.floatingBtn.hidden = NO;
-//    self.floatingBtn.transform = CGAffineTransformMakeScale(0, 0);
+    BOOL shouldLayoutYosimite = NO;
+    if( self.yosemiteLayoutGuide.constant != 0 ){
+        self.yosemiteLayoutGuide.constant  = 0;
+        shouldLayoutYosimite = YES;
+    }
+    
     self.floatingCheck.hidden = NO;
     self.floatingCheck.transform = CGAffineTransformMakeScale(0, 0);
     [self.view insertSubview:viewController.view belowSubview:self.yosemite];
-    [UIView animateWithDuration:0.4f
+    [viewController.view layoutIfNeeded];
+    
+    [UIView animateWithDuration:0.25f
                           delay:0.0f options:( 7 << 16 )
                      animations:^{
                          self.floatingCheck.enabled = YES;
@@ -255,7 +239,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          
                          viewController.view.frame = self.view.frame;
                          
-                         [self.peak layoutIfNeeded];
+                         if( shouldLayoutYosimite )
+                             [self updateYosemiteOpacity];
+                         
+                         [self.view layoutIfNeeded];
                      }completion:^(BOOL f){
                          self.textBoard.hidden = YES;
                      }];
@@ -263,7 +250,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)pop{
     self.canAdjust = YES;
-    [self parkSunrise];
     UIViewController *target = self.childViewControllers.firstObject;
     self.textBoard.hidden = NO;
     self.peakLayoutGuide.constant = 0;
@@ -288,79 +274,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                      }];
 }
 
-- (void)updateThemeColor:(UIColor *)color string:(NSString *)string{
-    
-    self.themeColorString = self.crnote.colorType = string;
-    self.textBoard.tintColor = self.themeColor = color;
-//    [self.floatingActionCheck setTitleColor:color forState:UIControlStateNormal];
-}
-
-- (void)updateNoteFont:(NSString *)name size:(NSUInteger)size{
-    self.textBoard.font = [UIFont fontWithName:name size:size];
-    self.crnote.fontname = name;
-    self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
-}
-
-- (void)letCopy{
-    [UIPasteboard generalPasteboard].string = self.textBoard.text;
-    self.peak.notification = @"content copied, tap to disappear.";
-}
-
-- (void)letPaste{
-    self.textBoard.text = [UIPasteboard generalPasteboard].string;
-    self.textBoard.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
-    self.peak.notification = @"content pasted, tap to disappear.";
-}
-
-- (void)parkSunset{
-    self.park.layer.shadowOpacity = 0.27;
-}
-
-- (void)parkSunrise{
-    self.park.layer.shadowOpacity = 0;
-}
-
-- (void)foldPark:(BOOL)fold{
-//    if( fold )
-//        [self foldParkDistants:-128];
-//    else
-//        [self foldParkDistants:0];
-}
-
-//- (void)foldParkDistants:(CGFloat)distants{
-//    self.parkGuide.constant = distants;
-//    
-//    CGFloat alpha = 1 - (fabs(distants) / 128.0);
-//    
-//    if( distants == -128 )
-//        [self parkSunset];
-//    else
-//        [self parkSunrise];
-//    
-//    [UIView animateWithDuration:0.25f
-//                          delay:0.0f options:(7 << 16)
-//                     animations:^{
-//                         
-//                         self.parkTitle.alpha = alpha;
-//                         [self.view layoutIfNeeded];
-//                         
-//                     }completion:nil];
-//}
-
 - (void)letPark{
-//    self.yosemite = ({
-//        CRPark *yose = [[CRPark alloc] initFromColor:self.themeColor];
-//        [yose setTranslatesAutoresizingMaskIntoConstraints:NO];
-//        [self.view addSubview:yose];
-//        [yose.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-//        [yose.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-//        [yose.heightAnchor constraintEqualToConstant:STATUS_BAR_HEIGHT + 128.0f].active = YES;
-//        self.yosemiteLayoutGuide = [yose.topAnchor constraintEqualToAnchor:self.view.topAnchor];
-//        self.yosemiteLayoutGuide.active = YES;
-//        self.yosemiteLayoutConstant = 0;
-//        yose;
-//    });
-    
     self.yosemite = ({
         CRVisualYosemite *yose = [[CRVisualYosemite alloc] initFromEffectStyle:UIBlurEffectStyleDark];
         [self.view addSubview:yose];
@@ -368,27 +282,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         [yose.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
         self.yosemiteLayoutGuide = [yose.topAnchor constraintEqualToAnchor:self.view.topAnchor];
         self.yosemiteLayoutGuide.active = YES;
-        self.yosemiteLayoutConstant = 0;
         yose;
     });
-    
-//    self.floatingBtn = ({
-//        UIButton *floating = [[UIButton alloc] init];
-//        floating.translatesAutoresizingMaskIntoConstraints = NO;
-//        floating.layer.cornerRadius = 56 / 2.0f;
-//        floating.backgroundColor = [UIColor whiteColor];
-//        floating.titleLabel.font = [UIFont MaterialDesignIconsWithSize:24];
-//        [self.view addSubview:floating];
-//        [floating.rightAnchor constraintEqualToAnchor:self.yosemite.rightAnchor constant:-16].active = YES;
-//        [floating.bottomAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor constant:28].active = YES;
-//        [floating.heightAnchor constraintEqualToAnchor:floating.widthAnchor].active = YES;
-//        [floating.widthAnchor constraintEqualToConstant:56.0f].active = YES;
-//        [floating makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
-//        [floating setTitle:[UIFont mdiCheck] forState:UIControlStateNormal];
-//        [floating setTitleColor:self.themeColor forState:UIControlStateNormal];
-//        [floating addTarget:self action:@selector(pop) forControlEvents:UIControlEventTouchUpInside];
-//        floating;
-//    });
     
     self.floatingCheck = ({
         CRVisualFloatingButton *check = [[CRVisualFloatingButton alloc] initFromFont:[UIFont MaterialDesignIconsWithSize:24]
@@ -402,31 +297,15 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         check;
     });
     
-    self.yosemite.nameplate.text = @"ld install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single ";
+//    self.yosemite.nameplate.text = @"ld install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single ";
     [self.yosemite.dismissBtn addTarget:self action:@selector(dismissSelf) forControlEvents:UIControlEventTouchUpInside];
-    
-    self.floatingBtn.hidden = YES;
-//    self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
 }
 
 - (void)letPeak{
-//    self.peak = ({
-//        CRPeak *peak = [[CRPeak alloc] init];
-//        [peak setTranslatesAutoresizingMaskIntoConstraints:NO];
-//        [self.view addSubview:peak];
-//        [peak makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
-//        [peak.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-//        [peak.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-//        self.peakLayoutGuide = [peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
-//        self.peakLayoutGuide.active = YES;
-//        peak;
-//    });
-    
     self.peak = ({
         CRVisualPeak *peak = [[CRVisualPeak alloc] initFromEffectStyle:UIBlurEffectStyleDark];
         peak.translatesAutoresizingMaskIntoConstraints = NO;
         [self.view addSubview:peak];
-        [peak letShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
         [peak.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
         [peak.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
         self.peakLayoutGuide = [peak.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
@@ -447,18 +326,19 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }
     else if( tag == 1 ){
         self.noteEditable = !self.noteEditable;
+        self.peak.notification = [NSString stringWithFormat:@"Note %@", self.noteEditable ? @"unlocked" : @"locked"];
     }
     else if( tag == 2 ){
         [self fontPick];
     }
     else if( tag == 3 ){
-        self.crnote.type == CRNoteTypePhoto ? [self photoPreview] : [self photoPick];
+        [self.crnote.type isEqualToString:CRNoteTypePhoto] ? [self photoPreview] : [self photoPick];
     }
     else if( tag == 4 ){
         [self colorPick];
     }
     else if( tag == 5 ){
-        
+        [self letSave];
     }
     else if( tag == 6 ){
         [self letPaste];
@@ -474,11 +354,38 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }
 }
 
+- (void)letCopy{
+    if( [self.titleBoard isFirstResponder] ){
+        [UIPasteboard generalPasteboard].string = self.titleBoard.text;
+        self.peak.notification = @"title copied, tap to disappear.";
+    }else{
+        [UIPasteboard generalPasteboard].string = self.textBoard.text;
+        self.peak.notification = @"content copied, tap to disappear.";
+    }
+}
+
+- (void)letPaste{
+    if( ![UIPasteboard generalPasteboard].string ) return;
+    
+    NSString *pasteString = [UIPasteboard generalPasteboard].string;
+    
+    if( [self.titleBoard isFirstResponder] ){
+        self.titleBoard.text = [NSString stringWithFormat:@"%@%@", self.titleBoard.text, pasteString];
+        self.yosemite.nameplate.text = self.titleBoard.text;
+        self.peak.notification = @"title pasted, tap to disappear.";
+    }else{
+        NSString *text = self.textBoard.text;
+        self.textBoard.text = [NSString stringWithFormat:@"%@%@%@", [text substringToIndex:self.textBoard.selectedRange.location], pasteString, [text substringFromIndex:self.textBoard.selectedRange.location]];
+        self.textBoard.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
+        self.peak.notification = @"content pasted, tap to disappear.";
+    }
+}
+
 - (void)letTextBoard{
     self.textBoard = ({
         UITextView *board = [[UITextView alloc] init];
         board.translatesAutoresizingMaskIntoConstraints = NO;
-        board.contentInset = UIEdgeInsetsMake(0, 0, 108, 0);
+        board.contentInset = UIEdgeInsetsMake(0, 0, 112, 0);
         board.textContainerInset = UIEdgeInsetsMake(60, 24, 0, 24);
         board.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 52, 0);
         board.textContainer.lineFragmentPadding = 0;
@@ -491,14 +398,17 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     
     self.lastPointMark = 0;
     
-    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own appom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
+//    self.textBoard.text = @"controller you choose for each tab should reflect the needs of that particular mode of operation. If you need to present a relatively rich set of data, you could install a navigation controller to manage the navigation through that data. If the data being presented is simpler, you could install a content view controller with a single view.Figure 2-4 shows several screens from the Clock app. The World Clock tab uses a navigation controller primarily so that it can present the buttons it needs to edit the list of clocks. The Stopwatch tab requires only a single screen for its entire interface and therefore uses a single view controller. The Timer tab uses a custom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own appom view controller for the main screen and presents an additional view controller modally when the When Timer Ends button is tapped.    The tab bar controller handles all of the interactions associated with presenting the content view controllers, so there is very little you have to do with regard to managing tabs or the view controllers in them. Once displayed, your content view controllers should simply focus on presenting their content.For general information and guidance on defining custom view controllers, see Creating Custom Content View Controllers inListing 2-1 shows the basic code needed to create and install a tab bar controller interface in the main window of your app. This example creates only two tabs, but you could create as many tabs as needed by creating more view controller objects and adding them to the controllers array. You need to replace the custom view controller names MyViewController and MyOtherViewController with classes from your own app";
     
     self.titleBoard = ({
         UITextField *board = [[UITextField alloc] init];
         board.translatesAutoresizingMaskIntoConstraints = NO;
         board.placeholder = CRNoteInvalilTitle;
         board.textColor = [UIColor colorWithWhite:27 / 255 alpha:1];
+        board.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightRegular];
         board.tintColor = [UIColor CRColor:97 :125 :138 :1];
+        board.adjustsFontSizeToFitWidth = YES;
+        board.minimumFontSize = 14;
         board.delegate = self;
         [board addTarget:self action:@selector(updateTitle) forControlEvents:UIControlEventAllEditingEvents];
         board;
@@ -523,31 +433,24 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
-//    if( self.peakGuide.constant == 0 )
-//        [self peakLayout:NO autoLayout:YES];
+    self.peak.notification = nil;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
     CGFloat pointY = scrollView.contentOffset.y;
     
-    BOOL shouldLayout = NO, isScrollUp = NO;
     CGFloat offset = self.view.frame.size.height - 52 - STATUS_BAR_HEIGHT - 128 + fabs(self.yosemiteLayoutGuide.constant);
     CGFloat distants = pointY - self.lastPointMark;
     
-    isScrollUp = self.lastPointMark < pointY ? YES : NO;
+    BOOL isScrollUp = self.lastPointMark < pointY ? YES : NO;
     
-    if( pointY > 0 && pointY < scrollView.contentSize.height - offset + 1 ){
-        shouldLayout = YES;
-    }
-    
-    if( pointY <= 0 ){
+    if( pointY > 0 && pointY < (scrollView.contentSize.height - offset + 1) && self.canAdjust ){
+        isScrollUp ? ([self scrollViewDidScrollUp:fabs(distants)]) : ([self scrollviewDidScrollDown:fabs(distants)]);
+    }else if( pointY <= 0 && self.canAdjust ){
         self.yosemiteLayoutGuide.constant = 0;
         [self updateYosemiteOpacity];
         [self.yosemite layoutIfNeeded];
     }
-    
-    if( shouldLayout && self.canAdjust )
-        isScrollUp ? ([self scrollViewDidScrollUp:fabs(distants)]) : ([self scrollviewDidScrollDown:fabs(distants)]);
     
     self.lastPointMark = pointY;
 }
@@ -558,7 +461,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)scrollviewDidScrollDown:(CGFloat)distants{
     if( self.yosemiteLayoutGuide.constant == 0 ) return;
-//    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant + distants > 0 ? 0 : self.yosemiteLayoutConstant + distants;
     self.yosemiteLayoutGuide.constant = self.yosemiteLayoutGuide.constant + distants > 0 ? 0 : self.yosemiteLayoutGuide.constant + distants;
     [self updateYosemiteOpacity];
     [self.yosemite layoutIfNeeded];
@@ -566,7 +468,6 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)scrollViewDidScrollUp:(CGFloat)distants{
     if( self.yosemiteLayoutGuide.constant == -128 ) return;
-//    self.yosemiteLayoutConstant = self.yosemiteLayoutConstant - distants < -128 ? -128 : self.yosemiteLayoutConstant - distants;
     self.yosemiteLayoutGuide.constant = self.yosemiteLayoutGuide.constant - distants < -128 ? -128 : self.yosemiteLayoutGuide.constant - distants;
     [self updateYosemiteOpacity];
     [self.yosemite layoutIfNeeded];
@@ -578,7 +479,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView{
-    [self foldPark:YES];
+    self.yosemiteLayoutGuide.constant = -128;
+    [UIView animateWithDuration:0.25f
+                          delay:0.0f
+                        options:(7 << 16)
+                     animations:^{
+                         [self.yosemite layoutIfNeeded];
+                         [self updateYosemiteOpacity];
+                     }completion:nil];
     
     if( [textView.text isEqualToString:CRNoteInvalilContent] ){
         textView.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
@@ -589,7 +497,14 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (BOOL)textViewShouldEndEditing:(UITextView *)textView{
-    [self foldPark:NO];
+    self.yosemiteLayoutGuide.constant = 0;
+    [UIView animateWithDuration:0.25f
+                          delay:0.0f
+                        options:(7 << 16)
+                     animations:^{
+                         [self.yosemite layoutIfNeeded];
+                         [self updateYosemiteOpacity];
+                     }completion:nil];
     
     NSString *text = [textView.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
@@ -610,10 +525,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 }
 
 - (void)photoPreview{
-    
     CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.yosemite.image title:self.titleBoard.text];
     preview.photoDeletedHandler = ^{
-//        self.parkBear.image = nil;
         self.crnote.photoAsset = nil;
     };
     [self presentViewController:preview animated:YES completion:nil];
@@ -626,7 +539,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         picker.selectedFontName = self.crnote.fontname;
         picker.selectedFontSize = [self.crnote.fontsize integerValue];
         picker.fontSelectedHandler = ^(NSString *name, NSUInteger size, BOOL unknow){
-            [self updateNoteFont:name size:size];
+            
+            self.textBoard.font = [UIFont fontWithName:name size:size];
+            self.crnote.fontname = name;
+            self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
+            
         };
         picker;
     })];
@@ -637,7 +554,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         CRColorPickController *picker = [[CRColorPickController alloc] init];
         picker.currentColorString = self.themeColorString;
         picker.colorSelectedHandler = ^(UIColor *color, NSString *name){
-            [self updateThemeColor:color string:name];
+            
+            self.themeColorString = self.crnote.colorType = name;
+            self.textBoard.tintColor = self.themeColor = color;
+            [self.peak.palette setTitleColor:color forState:UIControlStateNormal];
+            
         };
         picker;
     })];
@@ -651,7 +572,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         picker.themeColor = self.themeColor;
         
         picker.PHPreviewHandler = ^(UIImage *priview){
-//            self.parkBear.image = priview;
+            self.yosemite.image = priview;
         };
         
         picker.PHAssetHandler = ^(PHAsset *photoAsset){
@@ -660,7 +581,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                 self.crnote.photoAsset = photoAsset;
             else{
                 [self pop];
-//                [self.parkBear setImage:nil];
+                self.yosemite.image = nil;
             }
         };
         
@@ -690,7 +611,8 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)letSave{
     
-    self.crnote.content = self.textBoard.text;
+    self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : self.titleBoard.text;
+    self.crnote.content = self.textBoard.text.length > NSMaximumStringLength ? [self.textBoard.text substringToIndex:NSMaximumStringLength] : self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     
     BOOL save;

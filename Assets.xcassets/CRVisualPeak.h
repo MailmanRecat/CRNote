@@ -17,7 +17,7 @@
 @property( nonatomic, strong ) UIButton *lock;
 @property( nonatomic, strong ) UIButton *font;
 @property( nonatomic, strong ) UIButton *photo;
-//@property( nonatomic, strong ) UIButton *palette;
+@property( nonatomic, strong ) UIButton *palette;
 @property( nonatomic, strong ) UIButton *save;
 @property( nonatomic, strong ) UIButton *paste;
 @property( nonatomic, strong ) UIButton *copying;

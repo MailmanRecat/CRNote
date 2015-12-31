@@ -88,7 +88,7 @@
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     
-    self.crBear.backgroundColor = [UIColor colorWithWhite:237 / 255.0 alpha:1];
+    self.crBear.backgroundColor = [UIColor colorWithWhite:89 / 255.0 alpha:1];
 }
 
 - (void)viewWillDisappear:(BOOL)animated{
@@ -103,21 +103,27 @@
 }
 
 - (void)makeCancelButton{
+    
+    UIVisualEffectView *effect = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+    effect.translatesAutoresizingMaskIntoConstraints = NO;
+    
     self.cancelButton = ({
         UIButton *cancel = [[UIButton alloc] init];
         cancel.translatesAutoresizingMaskIntoConstraints = NO;
-        cancel.backgroundColor = [UIColor whiteColor];
         cancel.titleLabel.font = [CRNoteApp appFontOfSize:19 weight:UIFontWeightMedium];
         [cancel setTitle:@"Cancel" forState:UIControlStateNormal];
-        [cancel setTitleColor:[UIColor colorWithWhite:59 / 255.0 alpha:1] forState:UIControlStateNormal];
+        [cancel setTitleColor:[UIColor colorWithWhite:255 / 255.0 alpha:1] forState:UIControlStateNormal];
         [cancel makeShadowWithSize:CGSizeMake(0, -1) opacity:0.17 radius:3];
         [cancel addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchUpInside];
         cancel;
     });
     
-    [self.view addSubview:self.cancelButton];
-    [self.cancelButton.heightAnchor constraintEqualToConstant:52].active = YES;
-    [CRLayout view:@[self.cancelButton, self.view] type:CREdgeLeft | CREdgeBottom | CREdgeRight];
+    [self.view addSubview:effect];
+    [effect.heightAnchor constraintEqualToConstant:52].active = YES;
+    [CRLayout view:@[effect, self.view] type:CREdgeLeft | CREdgeBottom | CREdgeRight];
+    
+    [effect.contentView addSubview:self.cancelButton];
+    [CRLayout view:@[self.cancelButton, effect.contentView] type:CREdgeAround];
 }
 
 - (void)makeCRBear{
