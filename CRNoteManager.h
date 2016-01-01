@@ -9,14 +9,21 @@
 #import <Foundation/Foundation.h>
 #import "CRNoteDatabase.h"
 
+static NSString *const CR_NOTE_SAVE_NOTIFICATION = @"CR_NOTE_SAVE_NOTIFICATION";
+static NSString *const CR_NOTE_DELETE_NOTIFICATION = @"CR_NOTE_DELETE_NOTIFICATION";
+static NSString *const CR_NOTE_UPDATE_NOTIFICATION = @"CR_NOTE_UPDATE_NOTIFICATION";
+
 @interface CRNoteManager : NSObject
 
-@property( nonatomic, strong ) CRNote *noteasset;
-@property( nonatomic, assign ) BOOL save;
+//@property( nonatomic, strong ) CRNote *asset;
 
 + (instancetype)defaultManager;
-
 + (NSArray<CRNote *> *)fetchNotes;
+
+- (void)letAsset:(CRNote *)note;
+- (BOOL)letSave;
+- (BOOL)letDelete;
+- (BOOL)letUpdate;
 
 
 @end

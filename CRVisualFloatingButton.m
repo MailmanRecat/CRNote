@@ -27,6 +27,11 @@
     return self;
 }
 
+- (void)setTitle:(NSString *)title{
+    _title = title;
+    self.titleLabel.text = title;
+}
+
 - (void)initClass:(UIBlurEffectStyle)style{
     self.translatesAutoresizingMaskIntoConstraints = NO;
     [self.widthAnchor constraintEqualToConstant:56].active = YES;

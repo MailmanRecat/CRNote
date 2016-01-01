@@ -8,13 +8,15 @@
 
 #define CR_USER_LIBRARY_DENEY @"library access denied, tap to setting."
 
-#import "CRNoteDatabase.h"
+#import "CRNoteManager.h"
+//#import "CRNoteDatabase.h"
 #import "CRNoteViewController.h"
 #import "CRColorPickController.h"
 #import "GGAnimationSunrise.h"
 #import "CRFontController.h"
 #import "CRPhotoPreviewController.h"
 #import "CRPHAssetsController.h"
+#import "CRDeleteController.h"
 
 //google style
 #import "CRPark.h"
@@ -271,6 +273,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
                          self.floatingCheck.hidden = YES;
                          [target.view removeFromSuperview];
                          [target removeFromParentViewController];
+                         
+                         if( [target isKindOfClass:[CRDeleteController class]] )
+                             self.floatingCheck.title = [UIFont mdiCheck];
+                         
                      }];
 }
 
@@ -322,7 +328,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     NSInteger tag = btn.tag - CR_PEAK_BUTTON_BASIC_TAG;
     
     if( tag == 0 ){
-        
+        [self letDelete];
     }
     else if( tag == 1 ){
         self.noteEditable = !self.noteEditable;
@@ -615,13 +621,20 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.crnote.content = self.textBoard.text.length > NSMaximumStringLength ? [self.textBoard.text substringToIndex:NSMaximumStringLength] : self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     
+    [[CRNoteManager defaultManager] letAsset:self.crnote];
     BOOL save;
     if( [self.crnote.noteID isEqualToString:CRNoteInvalidID] )
-        save = [CRNoteDatabase insertNote:self.crnote];
+        save = [[CRNoteManager defaultManager] letSave];
     else
-        save = [CRNoteDatabase updateNote:self.crnote];
+        save = [[CRNoteManager defaultManager] letUpdate];
     
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)letDelete{
+    [[CRNoteManager defaultManager] letAsset:self.crnote];
+    [self.floatingCheck setTitle:[UIFont mdiClose]];
+    [self push:[CRDeleteController new]];
 }
 
 - (void)dismissSelf{

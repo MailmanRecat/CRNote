@@ -8,7 +8,6 @@
 
 #import "CRDevelopController.h"
 #import "CRNoteDatabase.h"
-#import "CRNoteCurrent.h"
 #import "CRPhotoManager.h"
 
 @interface CRDevelopController()
@@ -116,7 +115,7 @@
     [path appendFormat:@"%ld \n ", [[CRPhotoManager defaultManager].thumbnailCache count]];
     [path appendFormat:@"\n "];
     
-    NSArray *notes = [CRNoteCurrent allCRNoteWithFormat:NO];
+    NSArray *notes = [CRNoteDatabase selectNoteFromAll];
     [path appendFormat:@"%@\n", notes];
     
     self.textView.text = path;

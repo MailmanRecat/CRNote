@@ -10,6 +10,8 @@
 
 @interface CRVisualFloatingButton : UIControl
 
+@property( nonatomic, strong ) NSString *title;
+
 - (instancetype)initFromFont:(UIFont *)font title:(NSString *)title blurEffectStyle:(UIBlurEffectStyle)effectStyle;
 
 @end

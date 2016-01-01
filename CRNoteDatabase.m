@@ -92,8 +92,6 @@ static NSString *const CR_NOTE_DATABASE_KEY = @"CR_NOTE_DATABASE_KEY";
     [[NSUserDefaults standardUserDefaults] setObject:(NSArray *)notes forKey:CR_NOTE_DATABASE_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
-    [CRNote logCRNote:note];
-    
     return YES;
 }
 

@@ -63,7 +63,7 @@
     self.timeTag = ({
         label = [UILabel new];
         label.translatesAutoresizingMaskIntoConstraints = NO;
-        label.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightMedium];
+        label.font = [CRNoteApp appFontOfSize:16 weight:UIFontWeightMedium];
         label;
     });
     self.notetitle = ({
@@ -105,7 +105,7 @@
     [self.timeTag.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
     [self.timeTag.heightAnchor constraintEqualToConstant:32].active = YES;
     [self.timeTag.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:16].active = YES;
-    [self.timeTag.widthAnchor constraintEqualToConstant:64].active = YES;
+    [self.timeTag.widthAnchor constraintEqualToConstant:52].active = YES;
     [self.timeTag.rightAnchor constraintEqualToAnchor:self.wrapper.leftAnchor constant:-8].active = YES;
     [self.wrapper.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8].active = YES;
     [self.wrapper.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-8].active = YES;

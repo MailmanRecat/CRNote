@@ -78,7 +78,7 @@
         plate.text = @"Notes";
         plate.textColor = style == UIBlurEffectStyleDark ? [UIColor whiteColor] : [UIColor blackColor];
         [self.contentView addSubview:plate];
-        [plate.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:64].active = YES;
+        [plate.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:76].active = YES;
         [plate.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:0.6].active = YES;
         [plate.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
         [plate.heightAnchor constraintEqualToConstant:56.0].active = YES;
