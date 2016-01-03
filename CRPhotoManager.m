@@ -119,8 +119,6 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
         targetSize = CGSize_iphone6s_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
     else
         targetSize = CGSize_iphone6_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
-        
-    NSLog(@"target size %lf, %lf", targetSize.width, targetSize.height);
     
     [[PHImageManager defaultManager] requestImageDataForAsset:photoAsset
                                                       options:nil

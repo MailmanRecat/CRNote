@@ -44,7 +44,7 @@
         UILabel *msg = [[UILabel alloc] init];
         msg.translatesAutoresizingMaskIntoConstraints = NO;
         msg.adjustsFontSizeToFitWidth = YES;
-        msg.text = @"Notes you add appear here";
+//        msg.text = @"Notes you add appear here";
         msg.textColor = style == UIBlurEffectStyleDark ? [UIColor colorWithWhite:1 alpha:1] : [UIColor colorWithWhite:0 alpha:1];
         msg.textAlignment = NSTextAlignmentCenter;
         msg.font = [CRNoteApp appFontOfSize:20 weight:UIFontWeightRegular];

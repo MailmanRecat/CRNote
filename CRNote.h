@@ -57,6 +57,7 @@ static NSString *const CRNoteEditableString = @"CR_NOTE_EDITABLE_STRING";
 @property( nonatomic, strong ) PHAsset *photoAsset;
 
 + (instancetype)defaultNote;
++ (instancetype)noteFromNote:(CRNote *)note;
 - (instancetype)initFromDictionary:(NSDictionary *)dictionary;
 
 + (NSString *)currentTimeString;

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #import "CRTestingFunction.h"
 #import "CRNote.h"
+#import "CRNoteDebug.h"
 #import "CRNoteDatabase.h"
 #import "CRMutableQueue.h"
 #import "CRPhotoManager.h"
@@ -15,6 +16,8 @@
 @implementation CRTestingFunction
 
 + (void)runTest{
+    
+    if( [CRNoteDebug isDebug] == NO ) return;
     
     [CRNoteDatabase runTest];
     [CRPhotoManager runTest];

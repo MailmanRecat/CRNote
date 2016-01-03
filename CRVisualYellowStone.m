@@ -110,7 +110,7 @@
         [sto setTitleColor:style == UIBlurEffectStyleDark ? [UIColor colorWithWhite:1 alpha:0.5] : [UIColor colorWithWhite:0 alpha:0.5]
                   forState:UIControlStateHighlighted];
         [self.contentView addSubview:sto];
-        [sto.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor].active = YES;
+        [sto.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:56].active = YES;
         [sto.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
         [sto.widthAnchor constraintEqualToConstant:56.0].active = YES;
         [sto.heightAnchor constraintEqualToConstant:56.0].active = YES;
@@ -121,8 +121,8 @@
         GoogleToggle *tog = [[GoogleToggle alloc] init];
         tog.tipTheme = [UIColor colorWithWhite:89 / 255 alpha:1];
         [self.contentView addSubview:tog];
-        [tog.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-56].active = YES;
-        [tog.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-16].active = YES;
+        [tog.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-8].active = YES;
+        [tog.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
         tog;
     });
     

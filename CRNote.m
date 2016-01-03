@@ -35,6 +35,24 @@
                                                 }];
 }
 
++ (instancetype)noteFromNote:(CRNote *)note{
+    return [[CRNote alloc] initFromDictionary:@{
+                                                CRNoteIDString: note.noteID,
+                                                CRNoteTitleString: note.title,
+                                                CRNoteContentString: note.content,
+                                                CRNoteContentPreviewString: note.contentPreview,
+                                                CRNoteColorTypeString: note.colorType,
+                                                CRNoteImageNameString: note.imageName,
+                                                CRNoteTimeCreateString: note.timeCreate,
+                                                CRNoteTimeUpdateString: note.timeUpdate,
+                                                CRNoteTagString: note.tag,
+                                                CRNoteTypeString: note.type,
+                                                CRNoteFontnameString: note.fontname,
+                                                CRNoteFontsizeString: note.fontsize,
+                                                CRNoteEditableString: note.editable
+                                                }];
+}
+
 - (instancetype)initFromDictionary:(NSDictionary *)dictionary{
     self = [super init];
     if( self ){

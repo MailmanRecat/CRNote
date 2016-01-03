@@ -7,7 +7,7 @@
 //
 
 #define GOOGLE_TOGGLE_WIDTH 44
-#define GOOGLE_TOOGLE_HEIGHT 24
+#define GOOGLE_TOOGLE_HEIGHT 56
 
 #import <UIKit/UIKit.h>
 

@@ -6,7 +6,7 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#define CR_APP_DEBUG YES
+#define CR_APP_DEBUG NO
 
 #import <Foundation/Foundation.h>
 

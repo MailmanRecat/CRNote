@@ -132,6 +132,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     [self.textBoard.topAnchor constraintEqualToAnchor:self.yosemite.bottomAnchor].active = YES;
     [self.textBoard.bottomAnchor constraintEqualToAnchor:self.peak.bottomAnchor].active = YES;
     
+    if( [self.crnote.colorType isEqualToString:CRThemeColorDefault] == NO )
+        [self.peak.palette setTitleColor:[UIColor themeColorFromString:self.crnote.colorType] forState:UIControlStateNormal];
+    
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
         self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
     
@@ -140,6 +143,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     else
         self.noteEditable = NO;
     
+    self.titleBoard.font = [UIFont fontWithName:self.crnote.fontname size:21];
     self.textBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
     if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] ){
@@ -546,6 +550,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         picker.selectedFontSize = [self.crnote.fontsize integerValue];
         picker.fontSelectedHandler = ^(NSString *name, NSUInteger size, BOOL unknow){
             
+            self.titleBoard.font = [UIFont fontWithName:name size:21];
             self.textBoard.font = [UIFont fontWithName:name size:size];
             self.crnote.fontname = name;
             self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
@@ -582,12 +587,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         };
         
         picker.PHAssetHandler = ^(PHAsset *photoAsset){
-            NSLog(@"%@", photoAsset);
             if( photoAsset )
                 self.crnote.photoAsset = photoAsset;
             else{
                 [self pop];
-                self.yosemite.image = nil;
+                [self.yosemite setImage:nil];
             }
         };
         
@@ -617,7 +621,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)letSave{
     
-    self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : self.titleBoard.text;
+    self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : [self.titleBoard.text isEqualToString:@""] ? @"Untitle" : self.titleBoard.text;
     self.crnote.content = self.textBoard.text.length > NSMaximumStringLength ? [self.textBoard.text substringToIndex:NSMaximumStringLength] : self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     

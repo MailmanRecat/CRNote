@@ -6,7 +6,8 @@
 //  Copyright © 2015 com.caine. All rights reserved.
 //
 
-#define GOOGOLE_TOGGLE_SWIPE_SENSITIVITY 40
+#define GOOGLE_TOGGLE_SWIPE_SENSITIVITY 40
+#define GOOGLE_TOGGLE_SIZE 24
 
 #import "GoogleToggle.h"
 #import "UIView+CRView.h"
@@ -61,7 +62,7 @@
     if( _enable == enable ) return;
     _enable = enable;
     
-    self.tipLayoutGuide.constant = enable ? GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT : 0;
+    self.tipLayoutGuide.constant = enable ? GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE : 0;
     [UIView animateWithDuration:0.25f
                      animations:^{
                          
@@ -109,7 +110,7 @@
 }
 
 - (void)letTipStatusUpdate{
-    if( self.tipLayoutGuide.constant < (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT) / 2.0 ){
+    if( self.tipLayoutGuide.constant < (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE) / 2.0 ){
         [self letTipStatusDisable];
         _enable = NO;
     }else{
@@ -142,8 +143,8 @@
     else if( pan.state == UIGestureRecognizerStateChanged ){
         self.panEndX = [pan locationInView:self].x;
         
-        CGFloat maxLen = GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT;
-        CGFloat distantce = fabs(self.panEndX - self.panStartX) / GOOGOLE_TOGGLE_SWIPE_SENSITIVITY;
+        CGFloat maxLen = GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE;
+        CGFloat distantce = fabs(self.panEndX - self.panStartX) / GOOGLE_TOGGLE_SWIPE_SENSITIVITY;
         if( self.panEndX < 0 && self.tipLayoutGuide.constant > 0 ){
             self.tipLayoutGuide.constant = self.tipLayoutGuide.constant -  distantce < 0 ? 0 : self.tipLayoutGuide.constant - distantce;
             [self letTipStatusUpdate];
@@ -155,9 +156,9 @@
     }
     else if( pan.state == UIGestureRecognizerStateEnded ){
         
-        if( self.tipLayoutGuide.constant != 0 || self.tipLayoutGuide.constant != (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT) ){
+        if( self.tipLayoutGuide.constant != 0 || self.tipLayoutGuide.constant != (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE) ){
             
-            self.tipLayoutGuide.constant = self.tipLayoutGuide.constant < (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT) / 2.0 ? 0 : (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOOGLE_HEIGHT);
+            self.tipLayoutGuide.constant = self.tipLayoutGuide.constant < (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE) / 2.0 ? 0 : (GOOGLE_TOGGLE_WIDTH - GOOGLE_TOGGLE_SIZE);
             
             [self letTipStatusUpdate];
         }
@@ -178,11 +179,11 @@
         UIView *bridge = [[UIView alloc] init];
         bridge.translatesAutoresizingMaskIntoConstraints = NO;
         bridge.userInteractionEnabled = NO;
-        bridge.layer.cornerRadius = (GOOGLE_TOOGLE_HEIGHT - edgeInset) / 2.0f;
+        bridge.layer.cornerRadius = (GOOGLE_TOGGLE_SIZE - edgeInset) / 2.0f;
         bridge.backgroundColor = [UIColor colorWithWhite:0 alpha:0.7];
         [self addSubview:bridge];
         [bridge.widthAnchor constraintEqualToConstant:GOOGLE_TOGGLE_WIDTH - edgeInset].active = YES;
-        [bridge.heightAnchor constraintEqualToConstant:GOOGLE_TOOGLE_HEIGHT - edgeInset].active = YES;
+        [bridge.heightAnchor constraintEqualToConstant:GOOGLE_TOGGLE_SIZE - edgeInset].active = YES;
         [bridge.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
         [bridge.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
         bridge;
@@ -192,10 +193,10 @@
         UIView *hat = [[UIView alloc] init];
         hat.translatesAutoresizingMaskIntoConstraints = NO;
         hat.userInteractionEnabled = NO;
-        hat.layer.cornerRadius = GOOGLE_TOOGLE_HEIGHT / 2.0f;
+        hat.layer.cornerRadius = GOOGLE_TOGGLE_SIZE / 2.0f;
         [hat makeShadowWithSize:CGSizeMake(0.0f, 1.7f) opacity:0.3f radius:1.7f];
         [self addSubview:hat];
-        [hat.widthAnchor constraintEqualToConstant:GOOGLE_TOOGLE_HEIGHT].active = YES;
+        [hat.widthAnchor constraintEqualToConstant:GOOGLE_TOGGLE_SIZE].active = YES;
         [hat.heightAnchor constraintEqualToAnchor:hat.widthAnchor].active = YES;
         [hat.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
         self.tipLayoutGuide = [hat.leftAnchor constraintEqualToAnchor:self.leftAnchor];
@@ -207,7 +208,7 @@
         UILabel *tip = [[UILabel alloc] init];
         tip.translatesAutoresizingMaskIntoConstraints = NO;
         tip.layer.masksToBounds = YES;
-        tip.layer.cornerRadius = GOOGLE_TOOGLE_HEIGHT / 2.0f;
+        tip.layer.cornerRadius = GOOGLE_TOGGLE_SIZE / 2.0f;
         tip.textColor = [UIColor whiteColor];
         tip.textAlignment = NSTextAlignmentCenter;
         [self.tipHat addSubview:tip];
