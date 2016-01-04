@@ -75,7 +75,7 @@
                                 ];
     
     NSMutableArray *fontsize = [NSMutableArray new];
-    for( int i = 12; i < 48; i++ ){
+    for( int i = 12; i < 64 + 1; i++ ){
         [fontsize addObject:[NSString stringWithFormat:@"%dpt", i]];
     }
     self.fontsizeDataSource = (NSArray *)fontsize;
@@ -83,7 +83,7 @@
 
 - (void)viewWillAppear:(BOOL)animated{
     self.craigBearIndexPath = [NSIndexPath indexPathForRow:[self.fontnameDataSource indexOfObject:self.selectedFontName] inSection:0];
-    self.craigMonkeyIndexPath = [NSIndexPath indexPathForRow:[self.fontsizeDataSource indexOfObject:[NSString stringWithFormat:@"%ldpt", self.selectedFontSize]]
+    self.craigMonkeyIndexPath = [NSIndexPath indexPathForRow:[self.fontsizeDataSource indexOfObject:[NSString stringWithFormat:@"%ldpt", (unsigned long)self.selectedFontSize]]
                                                    inSection:0];
     
     [self.craigBear scrollToRowAtIndexPath:self.craigBearIndexPath

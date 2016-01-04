@@ -112,7 +112,13 @@
     [self.wrapper.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-16].active = YES;
     [self.notetitle.heightAnchor constraintEqualToConstant:titleHeight].active = YES;
     [self.notetitle.bottomAnchor constraintEqualToAnchor:self.subtitle.topAnchor].active = YES;
-    [self.subtitle.bottomAnchor constraintEqualToAnchor:self.wrapper.bottomAnchor constant:-8].active = YES;
+    
+    if( self.crimageview ){
+        [self.subtitle.heightAnchor constraintGreaterThanOrEqualToConstant:titleHeight].active = YES;
+        [self.subtitle.heightAnchor constraintLessThanOrEqualToAnchor:self.wrapper.heightAnchor constant:- 16 - titleHeight].active = YES;
+    }else{
+        [self.subtitle.bottomAnchor constraintEqualToAnchor:self.wrapper.bottomAnchor constant:-8].active = YES;
+    }
     
     [CRLayout view:@[ self.notetitle, self.wrapper ] type:CREdgeTop | CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(8, 8, 0, -8)];
     [CRLayout view:@[ self.subtitle, self.wrapper ] type:CREdgeLeft | CREdgeRight edge:UIEdgeInsetsMake(0, 8, 0, -8)];

@@ -336,7 +336,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     }
     else if( tag == 1 ){
         self.noteEditable = !self.noteEditable;
-        self.peak.notification = [NSString stringWithFormat:@"Note %@", self.noteEditable ? @"unlocked" : @"locked"];
+        self.peak.notification = [NSString stringWithFormat:@"Note %@", self.noteEditable ? @"editabled" : @"uneditabled"];
     }
     else if( tag == 2 ){
         [self fontPick];
@@ -537,6 +537,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 - (void)photoPreview{
     CRPhotoPreviewController *preview = [[CRPhotoPreviewController alloc] initWithImage:self.yosemite.image title:self.titleBoard.text];
     preview.photoDeletedHandler = ^{
+        self.yosemite.image = nil;
         self.crnote.photoAsset = nil;
     };
     [self presentViewController:preview animated:YES completion:nil];
@@ -550,10 +551,11 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         picker.selectedFontSize = [self.crnote.fontsize integerValue];
         picker.fontSelectedHandler = ^(NSString *name, NSUInteger size, BOOL unknow){
             
+            self.yosemite.nameplate.font = [UIFont fontWithName:name size:48];
             self.titleBoard.font = [UIFont fontWithName:name size:21];
             self.textBoard.font = [UIFont fontWithName:name size:size];
             self.crnote.fontname = name;
-            self.crnote.fontsize = [NSString stringWithFormat:@"%ld", size];
+            self.crnote.fontsize = [NSString stringWithFormat:@"%ld", (unsigned long)size];
             
         };
         picker;
@@ -568,11 +570,34 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
             
             self.themeColorString = self.crnote.colorType = name;
             self.textBoard.tintColor = self.themeColor = color;
-            [self.peak.palette setTitleColor:color forState:UIControlStateNormal];
+            if( [name isEqualToString:CRThemeColorDefault] == NO )
+                [self.peak.palette setTitleColor:color forState:UIControlStateNormal];
+            else
+                [self.peak.palette setTitleColor:[UIColor colorWithWhite:249 / 255.0 alpha:1] forState:UIControlStateNormal];
             
         };
         picker;
     })];
+}
+
+- (void)letPhotoPickPush{
+    CRPHAssetsController *picker = [[CRPHAssetsController alloc] init];
+    picker.themeColor = self.themeColor;
+    
+    picker.PHPreviewHandler = ^(UIImage *priview){
+        self.yosemite.image = priview;
+    };
+    
+    picker.PHAssetHandler = ^(PHAsset *photoAsset){
+        if( photoAsset )
+            self.crnote.photoAsset = photoAsset;
+        else{
+            [self pop];
+            [self.yosemite setImage:nil];
+        }
+    };
+    
+    [self push:picker];
 }
 
 - (void)photoPick{
@@ -608,8 +633,9 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         
     }else if( status == PHAuthorizationStatusNotDetermined ){
         
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status){
-            push();
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus astatus){
+            if( astatus == PHAuthorizationStatusAuthorized ){
+            }
         }];
         
     }else if( status == PHAuthorizationStatusRestricted ){

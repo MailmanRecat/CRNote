@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -16,7 +17,40 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iconBeAmazing.png" translatesAutoresizingMaskIntoConstraints="NO" id="wpJ-yk-c1d">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="wpJ-yk-c1d" secondAttribute="height" multiplier="1:1" id="hSB-bB-OHz"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Note" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hao-zU-6up">
+                                <rect key="frame" x="0.0" y="472" width="600" height="56"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="56" id="EJJ-RJ-oGf"/>
+                                    <constraint firstAttribute="width" secondItem="hao-zU-6up" secondAttribute="height" multiplier="24:1" id="xby-hy-jKv"/>
+                                    <constraint firstAttribute="width" secondItem="hao-zU-6up" secondAttribute="height" multiplier="24:1" id="zW2-HU-F7K"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="PingFangHK-Regular" family="PingFang HK" pointSize="21"/>
+                                <color key="textColor" red="0.22352941176470587" green="0.22352941176470587" blue="0.22352941176470587" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="xby-hy-jKv"/>
+                                        <exclude reference="zW2-HU-F7K"/>
+                                    </mask>
+                                </variation>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="wpJ-yk-c1d" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="AhY-Cq-yBg"/>
+                            <constraint firstItem="hao-zU-6up" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Cu9-gZ-b26"/>
+                            <constraint firstItem="xb3-aO-Qok" firstAttribute="top" secondItem="hao-zU-6up" secondAttribute="bottom" constant="72" id="FNd-Re-XBB"/>
+                            <constraint firstItem="wpJ-yk-c1d" firstAttribute="width" secondItem="Ze5-6b-2t3" secondAttribute="width" id="GU5-wl-TA0"/>
+                            <constraint firstItem="wpJ-yk-c1d" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="IhT-79-bT3"/>
+                            <constraint firstItem="hao-zU-6up" firstAttribute="width" secondItem="Ze5-6b-2t3" secondAttribute="width" id="ub5-g6-BW4"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -24,4 +58,7 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="iconBeAmazing.png" width="1024" height="1024"/>
+    </resources>
 </document>

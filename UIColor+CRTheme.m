@@ -61,7 +61,7 @@
 
 + (UIColor *)randomColor{
     
-    CGFloat (^randomRGB)(void) = ^{
+    double (^randomRGB)(void) = ^{
         return (arc4random() % 255) / 255.0;
     };
     

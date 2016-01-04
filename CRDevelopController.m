@@ -82,7 +82,7 @@
         [path appendFormat:@"   %.3f MB \n ", len];
     }
     
-    [path appendFormat:@"%ld \n ", counter];
+    [path appendFormat:@"%ld \n ", (unsigned long)counter];
     [path appendFormat:@"\n "];
     
     NSString *thumS;
@@ -98,7 +98,7 @@
         [path appendFormat:@"   %.1f KB \n ", len];
     }
     
-    [path appendFormat:@"%ld \n ", counter];
+    [path appendFormat:@"%ld \n ", (unsigned long)counter];
     [path appendFormat:@"\n "];
     
     [[CRPhotoManager defaultManager].photoCache enumerateKeysAndObjectsUsingBlock:^(NSString *key, UIImage *obj, BOOL *sS){

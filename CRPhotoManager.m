@@ -212,7 +212,7 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
             counter;
         });
         
-        NSString *name = [NSString stringWithFormat:@"%@%ld.jpg", CR_NOTE_PHOTO_NAME_FIXFER, counter];
+        NSString *name = [NSString stringWithFormat:@"%@%ld.jpg", CR_NOTE_PHOTO_NAME_FIXFER, (unsigned long)counter];
         
         @{
           CR_PHOTO_PATH_KEY: [CRPhotoManager pathFromPhotoname:name],

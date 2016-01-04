@@ -10,6 +10,8 @@
 #define CGSize_iphone5_X( s )  CGSizeMake(320 * s, 148 * s);
 #define CGSize_iphone6_X( s )  CGSizeMake(375 * s, 148 * s);
 #define CGSize_iphone6s_X( s ) CGSizeMake(414 * (s + 1), 148 * (s + 1));
+#define CGSize_ipad_X( s )     CGSizeMake(768 * s, 1024 * s);
+#define CGSize_ipadPro_X( s )  CGSizeMake(1024 * s, 1366 * s);
 
 #import "CRPHAssetsController.h"
 #import "CRPHAssetsCell.h"
@@ -78,10 +80,21 @@
     
     if( self.view.frame.size.width == 320 ){
         self.targetSize = CGSize_iphone5_X(2)
-    }else if( self.view.frame.size.width == 375 ){
+    }
+    else if( self.view.frame.size.width == 375 ){
         self.targetSize = CGSize_iphone6_X(2)
-    }else if( self.view.frame.size.width == 414 ){
+    }
+    else if( self.view.frame.size.width == 414 ){
         self.targetSize = CGSize_iphone6s_X(2)
+    }
+    else if( self.view.frame.size.width == 768 ){
+        self.targetSize = CGSize_ipad_X(2)
+    }
+    else if( self.view.frame.size.width == 1024 ){
+        self.targetSize = CGSize_ipadPro_X(2)
+    }
+    else{
+        self.targetSize = CGSize_iphone6_X(2)
     }
 }
 
