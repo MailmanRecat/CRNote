@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "CRShortcutActionManager.h"
 #import "CRTestingFunction.h"
 
 @interface AppDelegate ()
@@ -15,24 +16,27 @@
 
 @implementation AppDelegate
 
-- (void)letShortcutAction{
-    UIApplicationShortcutItem *add = [[UIApplicationShortcutItem alloc] initWithType:@"add"
-                                                                      localizedTitle:@"New Note"
-                                                                   localizedSubtitle:nil
-                                                                                icon:[UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypeAdd]
-                                                                            userInfo:@{
-                                                                                       @"info": @"com.mailman.crnote"
-                                                                                       }];
-    
-    [UIApplication sharedApplication].shortcutItems = @[ add ];
-}
+//- (void)letShortcutAction{
+//    UIApplicationShortcutItem *add = [[UIApplicationShortcutItem alloc] initWithType:@"add"
+//                                                                      localizedTitle:@"New Note"
+//                                                                   localizedSubtitle:nil
+//                                                                                icon:[UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypeAdd]
+//                                                                            userInfo:@{
+//                                                                                       @"info": @"com.mailman.crnote"
+//                                                                                       }];
+//    
+//    [UIApplication sharedApplication].shortcutItems = @[ add ];
+//}
+
+//- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler{
+//    [CRShortcutActionManager defaultManager].launchFromShortcut = YES;
+//    [CRShortcutActionManager defaultManager].launchShortcutType = shortcutItem.type;
+//}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+//    [CRTestingFunction runTest];
     
-    [CRTestingFunction runTest];
-    
-    [self letShortcutAction];
+//    [self letShortcutAction];
     
     return YES;
 }

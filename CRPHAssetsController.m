@@ -17,6 +17,7 @@
 #import "CRPHAssetsCell.h"
 #import "CRNoteViewController.h"
 #import "CRPHAssetsPreviewController.h"
+#import "UIDevice+ModelTouch.h"
 
 @interface CRPHAssetsController()<UITableViewDataSource, UITableViewDelegate, UIViewControllerPreviewingDelegate>
 
@@ -78,19 +79,21 @@
     [self makeCancelButton];
     [self check3DTouch];
     
-    if( self.view.frame.size.width == 320 ){
+    NSString *model = [UIDevice currentDeviceModelFromDevicePixels];
+    
+    if( [model isEqualToString:MODEL_IPHONE4] ){
         self.targetSize = CGSize_iphone5_X(2)
     }
-    else if( self.view.frame.size.width == 375 ){
+    else if( [model isEqualToString:MODEL_IPHONE6] ){
         self.targetSize = CGSize_iphone6_X(2)
     }
-    else if( self.view.frame.size.width == 414 ){
+    else if( [model isEqualToString:MODEL_IPHONE7] ){
         self.targetSize = CGSize_iphone6s_X(2)
     }
-    else if( self.view.frame.size.width == 768 ){
+    else if( [model isEqualToString:MODEL_IPADAIR] ){
         self.targetSize = CGSize_ipad_X(2)
     }
-    else if( self.view.frame.size.width == 1024 ){
+    else if( [model isEqualToString:MODEL_IPADPRO] ){
         self.targetSize = CGSize_ipadPro_X(2)
     }
     else{

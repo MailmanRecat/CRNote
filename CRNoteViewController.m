@@ -647,6 +647,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
 
 - (void)letSave{
     
+    if( [self.titleBoard.text isEqualToString:@"com.mailman.crnote.debug"] ){
+        [CRNoteDebug shareInstance].debug = YES;
+    }
+    
     self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : [self.titleBoard.text isEqualToString:@""] ? @"Untitle" : self.titleBoard.text;
     self.crnote.content = self.textBoard.text.length > NSMaximumStringLength ? [self.textBoard.text substringToIndex:NSMaximumStringLength] : self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];

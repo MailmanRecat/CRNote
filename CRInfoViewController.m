@@ -12,7 +12,7 @@
 #import "CRNoteApp.h"
 #import "UIView+CRView.h"
 #import "UIFont+MaterialDesignIcons.h"
-
+#import "CRNoteDebug.h"
 #import "CRDevelopController.h"
 
 #import "CRInfoTableviewCell.h"
@@ -61,8 +61,8 @@
 }
 
 - (void)debugVC{
+    if( [CRNoteDebug shareInstance].debug == NO ) return;
     CRDevelopController *develop = [[CRDevelopController alloc] init];
-    
     [self presentViewController:develop animated:YES completion:nil];
 }
 

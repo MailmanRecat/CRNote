@@ -10,10 +10,13 @@
 #define CGSize_iphone5_X( s )  CGSizeMake(320 * s, 148 * s);
 #define CGSize_iphone6_X( s )  CGSizeMake(375 * s, 148 * s);
 #define CGSize_iphone6s_X( s ) CGSizeMake(414 * (s + 1), 148 * (s + 1));
+#define CGSize_ipadair_X( s )  CGSizeMake(768 * s, 148 * s);
+#define CGSize_ipadpro_X( s )  CGSizeMake(1024 * s, 148 * s);
 
 #define k_PREVIEW_PHOTO_SCREEN_SCALE 2
 #define k_PREVIEW_PHOTO_SCALE 0.6
 
+#import "UIDevice+ModelTouch.h"
 #import "CRPhotoManager.h"
 
 static NSString *const CR_APP_DOCUMENTS = @"Documents";
@@ -110,13 +113,23 @@ static NSString *const CR_FILE_INFO_THUMBNAIL_PATH_KEY = @"thumbnailPath";
     PHO.resizeMode = PHImageRequestOptionsResizeModeExact;
     
     CGSize targetSize;
-    CGFloat width = [UIScreen mainScreen].bounds.size.width;
-    if( width == 320 )
+    NSString *model = [UIDevice currentDeviceModelFromDevicePixels];
+    
+    if( [model isEqualToString:MODEL_IPHONE4] )
         targetSize = CGSize_iphone4_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
-    else if( width == 375 )
+        
+    else if( [model isEqualToString:MODEL_IPHONE6] )
         targetSize = CGSize_iphone6_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
-    else if( width == 414 )
+        
+    else if( [model isEqualToString:MODEL_IPHONE7] )
         targetSize = CGSize_iphone6s_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+        
+    else if( [model isEqualToString:MODEL_IPADAIR] )
+        targetSize = CGSize_ipadair_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+        
+    else if( [model isEqualToString:MODEL_IPADPRO] )
+        targetSize = CGSize_ipadpro_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
+        
     else
         targetSize = CGSize_iphone6_X( k_PREVIEW_PHOTO_SCREEN_SCALE )
     

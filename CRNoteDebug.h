@@ -12,6 +12,10 @@
 
 @interface CRNoteDebug : NSObject
 
+@property( nonatomic, assign ) BOOL debug;
+
++ (instancetype)shareInstance;
+
 + (BOOL)isDebug;
 
 @end
