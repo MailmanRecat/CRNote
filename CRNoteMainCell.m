@@ -98,7 +98,7 @@
     CGFloat titleHeight;
     if( self.crimageview ){
         [CRLayout view:@[ self.crimageview, self.wrapper ] type:CREdgeLeft | CREdgeRight | CREdgeTop | CREdgeBottom];
-        titleHeight = 36;
+        titleHeight = 24;
     }else
         titleHeight = 20;
     

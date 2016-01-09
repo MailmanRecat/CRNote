@@ -138,7 +138,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     if( [self.crnote.type isEqualToString:CRNoteTypePhoto] )
         self.yosemite.image = [[CRPhotoManager defaultManager] photoFromPhotoname:self.crnote.imageName];
     
-    if( self.crnote.editable == CRNoteEditableYes )
+    if( [self.crnote.editable isEqualToString:CRNoteEditableYes] )
         self.noteEditable = YES;
     else
         self.noteEditable = NO;
@@ -146,18 +146,18 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.titleBoard.font = [UIFont fontWithName:self.crnote.fontname size:21];
     self.textBoard.font = [UIFont fontWithName:self.crnote.fontname size:[self.crnote.fontsize integerValue]];
     
-    if( ![self.crnote.title isEqualToString:CRNoteInvalilTitle] ){
+    if( [self.crnote.title isEqualToString:CRNoteInvalilTitle] == NO ){
         self.titleBoard.text = self.crnote.title;
         self.yosemite.nameplate.text = self.crnote.title;
     }else{
         self.yosemite.nameplate.text = CRNoteInvalilTitle;
     }
     
-    if( ![self.crnote.content isEqualToString:CRNoteInvalilContent] ){
+    if( [self.crnote.content isEqualToString:CRNoteInvalilContent] == NO ){
         self.textBoard.text = self.crnote.content;
         self.textBoard.textColor = [UIColor colorWithWhite:17 / 255.0 alpha:1];
     }else{
-        self.textBoard.text = @"Note";
+        self.textBoard.text = CRNoteInvalilContent;
         self.textBoard.textColor = [UIColor colorWithWhite:107 / 255.0 alpha:1];
     }
     
@@ -400,7 +400,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         board.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 52, 0);
         board.textContainer.lineFragmentPadding = 0;
         board.tintColor = [UIColor CRColor:97 :125 :138 :1];
-        board.textColor = [UIColor colorWithWhite:109 / 255.0 alpha:1];
+        board.textColor = [UIColor colorWithWhite:117 / 255.0 alpha:1];
         board.text = CRNoteInvalilContent;
         board.delegate = self;
         board;
@@ -413,7 +413,10 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     self.titleBoard = ({
         UITextField *board = [[UITextField alloc] init];
         board.translatesAutoresizingMaskIntoConstraints = NO;
-        board.placeholder = CRNoteInvalilTitle;
+        board.attributedPlaceholder = [[NSAttributedString alloc] initWithString:CRNoteInvalilTitle
+                                                                      attributes:@{
+                                                                                   NSForegroundColorAttributeName: [UIColor colorWithWhite:132 / 255.0 alpha:1]
+                                                                                   }];
         board.textColor = [UIColor colorWithWhite:27 / 255 alpha:1];
         board.font = [CRNoteApp appFontOfSize:21 weight:UIFontWeightRegular];
         board.tintColor = [UIColor CRColor:97 :125 :138 :1];
@@ -519,7 +522,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
     NSString *text = [textView.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
     if( [text isEqualToString:CRNoteInvalilContent] || [text isEqualToString:@""] ){
-        textView.textColor = [UIColor colorWithWhite:109 / 255.0 alpha:1];
+        textView.textColor = [UIColor colorWithWhite:117 / 255.0 alpha:1];
         textView.text = CRNoteInvalilContent;
     }
     
@@ -651,7 +654,7 @@ static NSString *const PH_AUTHORIZATION_STATUS_DENIED_MESSAGE_STRING = @"Library
         [CRNoteDebug shareInstance].debug = YES;
     }
     
-    self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : [self.titleBoard.text isEqualToString:@""] ? @"Untitle" : self.titleBoard.text;
+    self.crnote.title = self.titleBoard.text.length > 256 ? [self.textBoard.text substringToIndex:256] : [self.titleBoard.text isEqualToString:@""] ? CRNoteInvalilTitle : self.titleBoard.text;
     self.crnote.content = self.textBoard.text.length > NSMaximumStringLength ? [self.textBoard.text substringToIndex:NSMaximumStringLength] : self.textBoard.text;
     self.crnote.timeUpdate = [CRNote currentTimeString];
     

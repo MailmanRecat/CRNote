@@ -65,7 +65,7 @@
     self.nameplate = ({
         UILabel *plate = [[UILabel alloc] init];
         plate.translatesAutoresizingMaskIntoConstraints = NO;
-        [plate letShadowWithSize:CGSizeMake(0, 1) opacity:0.27 radius:3];
+//        [plate letShadowWithSize:CGSizeMake(0, 1) opacity:0.27 radius:3];
         [self.contentView addSubview:plate];
         [plate.heightAnchor constraintGreaterThanOrEqualToConstant:72].active = YES;
         [plate.heightAnchor constraintLessThanOrEqualToConstant:112].active = YES;
@@ -73,7 +73,7 @@
         [plate.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-8].active = YES;
         [plate.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:64].active = YES;
         plate.textColor = [UIColor whiteColor];
-        plate.font = [CRNoteApp appFontOfSize:48 weight:UIFontWeightRegular];
+        plate.font = [CRNoteApp appFontOfSize:48 weight:UIFontWeightLight];
         plate.adjustsFontSizeToFitWidth = YES;
         plate.numberOfLines = 0;
         plate;

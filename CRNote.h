@@ -15,7 +15,7 @@ static NSString *const CRNoteEditableNO  = @"CR_NOTE_EDITABLE_NO";
 
 static NSString *const CRNoteInvalidID = @"CR_NOTE_INVALID_ID";
 static NSString *const CRNoteInvalilTitle = @"Untitled";
-static NSString *const CRNoteInvalilContent = @"Note";
+static NSString *const CRNoteInvalilContent = @"Note something";
 static NSString *const CRNoteInvalidContentPreview = @"Note";
 static NSString *const CRNoteInvalilImageName = @"NoImage";
 static NSString *const CRNoteInvalilTag = @"Tag";
